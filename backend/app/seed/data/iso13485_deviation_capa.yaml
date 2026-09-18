@@ -1,0 +1,61 @@
+# DRAFT clause library — deviation handling & CAPA, ISO 13485:2016.
+# Illustrative starter content written from general regulatory knowledge for
+# Milestone 1 scaffolding. NOT verified against the current standard text.
+# Must be reviewed and corrected by a qualified SME/regulatory consultant
+# before any real audit-readiness use.
+regulation: iso13485
+clauses:
+  - clause_number: "8.3.1"
+    process_area: deviation_handling
+    document_type_applicability: [sop, deviation]
+    requirement_text: >
+      The organization shall document a procedure to define the controls, and
+      related responsibilities and authorities, for the identification and
+      control of nonconforming product.
+
+  - clause_number: "8.3.2"
+    process_area: deviation_handling
+    document_type_applicability: [sop, deviation]
+    requirement_text: >
+      The organization shall take action to eliminate the detected
+      nonconformity, and shall deal with nonconforming product by one or more
+      of: taking action to eliminate the nonconformity, authorizing use under
+      concession, or taking action to preclude original intended use.
+
+  - clause_number: "8.3.4"
+    process_area: deviation_handling
+    document_type_applicability: [sop, deviation, batch_record]
+    requirement_text: >
+      When nonconforming product is detected after delivery or use has begun,
+      the organization shall take action appropriate to the effects, or
+      potential effects, of the nonconformity, and maintain records of the
+      actions taken, including issuance of advisory notices where applicable.
+
+  - clause_number: "8.5.2"
+    process_area: capa
+    document_type_applicability: [sop, deviation]
+    requirement_text: >
+      The organization shall take corrective action to eliminate the causes of
+      nonconformities to prevent recurrence, including review of
+      nonconformities (including complaints), determination of causes,
+      evaluation of the need for action, implementation, records of results,
+      and review of the effectiveness of the corrective action taken.
+
+  - clause_number: "8.5.3"
+    process_area: capa
+    document_type_applicability: [sop, deviation]
+    requirement_text: >
+      The organization shall determine action to eliminate the causes of
+      potential nonconformities in order to prevent their occurrence,
+      including determination of potential nonconformities and their causes,
+      evaluation of the need for preventive action, and records of results and
+      review of effectiveness.
+
+  - clause_number: "8.2.3"
+    process_area: deviation_handling
+    document_type_applicability: [sop, deviation]
+    requirement_text: >
+      Feedback processes, including complaint handling, shall provide early
+      warning of quality problems and input into the corrective and preventive
+      action processes; the deviation-handling procedure should specify how
+      feedback data is routed into CAPA.

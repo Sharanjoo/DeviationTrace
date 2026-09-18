@@ -1,0 +1,70 @@
+# DRAFT clause library — deviation handling & CAPA, QMSR (21 CFR Part 820).
+# Illustrative starter content written from general regulatory knowledge for
+# Milestone 1 scaffolding. NOT verified against the current regulation text.
+# Must be reviewed and corrected by a qualified SME/regulatory consultant
+# before any real audit-readiness use.
+regulation: qmsr
+clauses:
+  - clause_number: "820.90(a)"
+    process_area: deviation_handling
+    document_type_applicability: [sop, deviation]
+    requirement_text: >
+      Establish and maintain procedures to control product that does not conform
+      to specified requirements. Procedures must address the identification,
+      documentation, evaluation, segregation, and disposition of nonconforming
+      product, and must define responsibility for review and disposition.
+
+  - clause_number: "820.90(b)"
+    process_area: deviation_handling
+    document_type_applicability: [sop, deviation]
+    requirement_text: >
+      The evaluation of nonconformance must include a determination of the need
+      for an investigation and notification of the persons or organizations
+      responsible for the nonconformance. The investigation and its rationale
+      must be documented.
+
+  - clause_number: "820.100(a)"
+    process_area: capa
+    document_type_applicability: [sop, deviation, batch_record]
+    requirement_text: >
+      Establish and maintain procedures for implementing corrective and
+      preventive action, including requirements to analyze processes, work
+      operations, concessions, quality audit reports, quality records, service
+      records, complaints, returned product, and other sources of quality data
+      to identify existing and potential causes of nonconforming product.
+
+  - clause_number: "820.100(a)(2)"
+    process_area: capa
+    document_type_applicability: [sop, deviation]
+    requirement_text: >
+      Investigate the cause of nonconformities relating to product, processes,
+      and the quality system. The investigation must be commensurate with the
+      significance and risk of the nonconformity.
+
+  - clause_number: "820.100(a)(3)"
+    process_area: capa
+    document_type_applicability: [sop, deviation]
+    requirement_text: >
+      Identify the action(s) needed to correct and prevent recurrence of
+      nonconforming product and other quality problems, and verify or validate
+      that the corrective and preventive action is effective and does not
+      adversely affect the finished device.
+
+  - clause_number: "820.100(a)(6)"
+    process_area: capa
+    document_type_applicability: [sop, deviation]
+    requirement_text: >
+      Ensure that information related to quality problems and corrective and
+      preventive actions is disseminated to those directly responsible for
+      assuring the quality of the product or the prevention of such problems,
+      and submitted for management review.
+
+  - clause_number: "820.198(a)"
+    process_area: deviation_handling
+    document_type_applicability: [sop, deviation]
+    requirement_text: >
+      Maintain complaint files, and establish and maintain procedures for
+      receiving, reviewing, and evaluating complaints. Where a complaint
+      represents an event that must be reported under FDA-specific QMSR
+      provisions, the deviation/CAPA process must link to that reporting
+      obligation.

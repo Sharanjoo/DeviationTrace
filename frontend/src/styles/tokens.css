@@ -1,0 +1,36 @@
+/* Glassmorphism design tokens, per the DeviationTrace PRD's UI/UX table.
+   Cards read tokens here; only the fixed Background layer applies blur,
+   per the PRD's performance note against stacking backdrop-filter layers. */
+
+:root {
+  --glass-panel-bg: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-blur: 16px;
+  --glass-radius: 18px;
+  --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.1);
+
+  --gradient-start: #dbeafe;
+  --gradient-end: #ffffff;
+
+  --text: #0f172a;
+  --text-muted: #475569;
+
+  --severity-critical: #ef6461;
+  --severity-major: #f5a524;
+  --severity-minor: #f2e394;
+  --severity-resolved: #7fd8a4;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --glass-panel-bg: rgba(255, 255, 255, 0.12);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+
+    --gradient-start: #0b1524;
+    --gradient-end: #1d3a3a;
+
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+  }
+}

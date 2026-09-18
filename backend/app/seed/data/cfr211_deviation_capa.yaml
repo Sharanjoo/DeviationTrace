@@ -1,0 +1,55 @@
+# DRAFT clause library — deviation handling & CAPA-adjacent production
+# controls, cGMP / 21 CFR Part 211. Illustrative starter content written from
+# general regulatory knowledge for Milestone 1 scaffolding. NOT verified
+# against the current regulation text. Must be reviewed and corrected by a
+# qualified SME/regulatory consultant before any real audit-readiness use.
+regulation: cfr211
+clauses:
+  - clause_number: "211.192"
+    process_area: deviation_handling
+    document_type_applicability: [sop, deviation, batch_record]
+    requirement_text: >
+      Any unexplained discrepancy or the failure of a batch or any of its
+      components to meet any of its specifications shall be thoroughly
+      investigated. The investigation shall extend to other batches that may
+      have been associated with the specific failure or discrepancy, and shall
+      be recorded in a written record that includes the conclusions and
+      followup.
+
+  - clause_number: "211.100(a)"
+    process_area: capa
+    document_type_applicability: [sop, batch_record]
+    requirement_text: >
+      There shall be written procedures for production and process controls
+      designed to assure that the drug products have the identity, strength,
+      quality, and purity they purport to have; deviations must be recorded
+      and justified.
+
+  - clause_number: "211.100(b)"
+    process_area: capa
+    document_type_applicability: [sop, deviation]
+    requirement_text: >
+      Written production and process control procedures shall be followed in
+      the execution of the various production and process control functions
+      and shall be documented at the time of performance; any deviation shall
+      be recorded and justified.
+
+  - clause_number: "211.22(a)"
+    process_area: deviation_handling
+    document_type_applicability: [sop]
+    requirement_text: >
+      The quality control unit shall have the responsibility and authority to
+      approve or reject all procedures or specifications impacting the
+      identity, strength, quality, and purity of the drug product, including
+      review of deviation investigations and CAPA closure prior to batch
+      release.
+
+  - clause_number: "211.198(a)"
+    process_area: deviation_handling
+    document_type_applicability: [sop, deviation]
+    requirement_text: >
+      Written procedures describing the handling of complaints shall be
+      established, including provision for review to determine whether the
+      complaint represents a serious and unexpected event that requires
+      investigation, and the investigation and its findings shall be
+      documented.

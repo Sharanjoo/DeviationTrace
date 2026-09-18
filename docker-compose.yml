@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: deviationtrace-postgres
+    environment:
+      POSTGRES_USER: deviationtrace
+      POSTGRES_PASSWORD: deviationtrace
+      POSTGRES_DB: deviationtrace
+    ports:
+      - "5532:5432"
+    volumes:
+      - deviationtrace_pgdata:/var/lib/postgresql/data
+
+volumes:
+  deviationtrace_pgdata:
