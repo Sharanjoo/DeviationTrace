@@ -9,12 +9,16 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+function authHeaders(): Record<string, string> {
   const token = localStorage.getItem("deviationtrace_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...authHeaders(),
       ...options.headers,
     },
   });
@@ -37,4 +41,14 @@ export const api = {
       headers: body ? { "Content-Type": "application/json" } : undefined,
       body: body ? JSON.stringify(body) : undefined,
     }),
+  upload: <T>(path: string, formData: FormData) =>
+    request<T>(path, { method: "POST", body: formData }),
+  downloadBlob: async (path: string): Promise<Blob> => {
+    const response = await fetch(`${API_BASE_URL}${path}`, { headers: authHeaders() });
+    if (!response.ok) {
+      const body = await response.text();
+      throw new ApiError(response.status, body || response.statusText);
+    }
+    return response.blob();
+  },
 };

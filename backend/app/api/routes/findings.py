@@ -26,7 +26,7 @@ def list_findings(
         db.query(Finding)
         .join(Document, Finding.document_id == Document.id)
         .filter(Document.org_id == current.org_id)
-        .options(joinedload(Finding.section), joinedload(Finding.clause))
+        .options(joinedload(Finding.section), joinedload(Finding.clause), joinedload(Finding.document))
     )
     if document_id:
         query = query.filter(Finding.document_id == document_id)
@@ -37,6 +37,24 @@ def list_findings(
     if status_:
         query = query.filter(Finding.status == status_)
     return query.all()
+
+
+@router.get("/findings/{finding_id}", response_model=FindingOut)
+def get_finding(
+    finding_id: uuid.UUID,
+    current: CurrentOrg = Depends(get_current_org),
+    db: Session = Depends(get_db),
+) -> Finding:
+    finding = (
+        db.query(Finding)
+        .join(Document, Finding.document_id == Document.id)
+        .filter(Finding.id == finding_id, Document.org_id == current.org_id)
+        .options(joinedload(Finding.section), joinedload(Finding.clause), joinedload(Finding.document))
+        .first()
+    )
+    if finding is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Finding not found")
+    return finding
 
 
 @router.post("/findings/{finding_id}/triage", response_model=TriageOut, status_code=status.HTTP_201_CREATED)

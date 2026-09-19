@@ -15,6 +15,14 @@ class DocumentSectionOut(BaseModel):
     span_end: int
 
 
+class DocumentSummaryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    title: str
+    type: str
+
+
 class DocumentOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

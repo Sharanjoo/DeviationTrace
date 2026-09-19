@@ -4,6 +4,7 @@ python -m app.seed.load_clauses && pytest."""
 
 import io
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 
 from docx import Document as DocxDocument
 from fastapi.testclient import TestClient
@@ -154,3 +155,33 @@ def test_triage_survives_reprocessing():
 
     findings_after = client.get("/findings", headers=_headers(token), params={"document_id": document_id}).json()
     assert any(f["id"] == finding_id for f in findings_after)
+
+
+def test_concurrent_process_calls_do_not_duplicate_findings():
+    """Regression test: two /process requests for the same brand-new document
+    racing each other (e.g. a double-click, a retry, or React StrictMode's dev
+    double-invoke) must not both insert findings for the same clause. Without
+    the row lock in documents.py's process_document, both requests read "no
+    existing findings" and both insert, doubling the count."""
+    token = _register()
+
+    upload = client.post(
+        "/documents",
+        headers=_headers(token),
+        data={"type": "sop", "process_area": "capa"},
+        files={"file": ("sop.docx", _docx_bytes(SPARSE_SOP_TEXT), "application/vnd.openxmlformats-officedocument.wordprocessingml.document")},
+    )
+    document_id = upload.json()["id"]
+
+    def process() -> int:
+        response = client.post(f"/documents/{document_id}/process", headers=_headers(token))
+        assert response.json()["status"] == "processed"
+        return response.status_code
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(executor.map(lambda _: process(), range(2)))
+    assert results == [202, 202]
+
+    findings = client.get("/findings", headers=_headers(token), params={"document_id": document_id}).json()
+    clause_ids = [f["clause"]["id"] for f in findings]
+    assert len(clause_ids) == len(set(clause_ids)), "duplicate findings for the same clause"

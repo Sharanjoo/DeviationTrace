@@ -3,7 +3,7 @@ import uuid
 from pydantic import BaseModel, ConfigDict
 
 from app.schemas.clause import RegulatoryClauseOut
-from app.schemas.document import DocumentSectionOut
+from app.schemas.document import DocumentSectionOut, DocumentSummaryOut
 
 
 class FindingOut(BaseModel):
@@ -11,6 +11,7 @@ class FindingOut(BaseModel):
 
     id: uuid.UUID
     document_id: uuid.UUID
+    document: DocumentSummaryOut
     section: DocumentSectionOut
     clause: RegulatoryClauseOut
     status: str

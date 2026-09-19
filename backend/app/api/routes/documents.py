@@ -125,6 +125,13 @@ def process_document(
     try:
         result = run_pipeline(document.file_ref, document.type)
 
+        # Serialize concurrent /process calls for the same document (e.g. a
+        # double-click, a client retry, or React StrictMode's dev double-invoke)
+        # around the section/finding writes below. Without this lock, two
+        # concurrent requests can both read "no existing rows" and both insert,
+        # producing duplicate Finding rows instead of one updating the other.
+        document = db.query(Document).filter(Document.id == document.id).with_for_update().one()
+
         # Reuse existing sections on reprocessing rather than delete + recreate:
         # file_ref is immutable once uploaded, so re-extracting the same file
         # always reproduces the same split, and Finding.section_id (plus, via
