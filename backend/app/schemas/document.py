@@ -24,6 +24,8 @@ class DocumentOut(BaseModel):
     title: str
     process_area: str
     status: str
+    detected_process_area: str | None = None
+    processing_error: str | None = None
     uploaded_at: datetime
 
 
@@ -32,5 +34,9 @@ class DocumentDetailOut(DocumentOut):
 
 
 class DocumentStatusOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: uuid.UUID
     status: str
+    detected_process_area: str | None = None
+    processing_error: str | None = None
