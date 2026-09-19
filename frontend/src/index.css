@@ -16,3 +16,20 @@ body {
   color: var(--text);
   font-family: system-ui, "Segoe UI", Roboto, sans-serif;
 }
+
+/* Form controls need an explicit, opaque background + text color: they
+   don't pick up the glass panel's translucency, and without this they fall
+   back to the browser's default (usually white), which becomes invisible
+   light-on-white once dark mode's --text turns light. */
+input,
+select,
+textarea,
+option {
+  background-color: var(--surface-bg);
+  color: var(--surface-text);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+}

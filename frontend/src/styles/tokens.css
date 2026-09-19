@@ -15,6 +15,13 @@
   --text: #0f172a;
   --text-muted: #475569;
 
+  /* Solid (non-translucent) surface for form controls. Native <select>
+     option lists ignore the glass panel's translucency and fall back to an
+     opaque background, so these must be explicit and theme-aware or dark
+     mode renders light text on a white dropdown. */
+  --surface-bg: #ffffff;
+  --surface-text: #0f172a;
+
   --severity-critical: #ef6461;
   --severity-major: #f5a524;
   --severity-minor: #f2e394;
@@ -32,5 +39,8 @@
 
     --text: #f1f5f9;
     --text-muted: #94a3b8;
+
+    --surface-bg: #1e293b;
+    --surface-text: #f1f5f9;
   }
 }
