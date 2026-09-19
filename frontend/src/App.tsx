@@ -15,8 +15,8 @@ const NAV_LINKS = [
   { to: "/report", label: "Report" },
 ];
 
-function App() {
-  const { isAuthenticated, logout } = useAuth();
+function AppShell() {
+  const { logout } = useAuth();
 
   return (
     <div className="min-h-screen">
@@ -24,29 +24,23 @@ function App() {
       <header className="mx-auto flex max-w-3xl items-center justify-between px-4 py-6">
         <span className="text-lg font-semibold">DeviationTrace</span>
         <nav className="flex gap-4 text-sm">
-          {isAuthenticated &&
-            NAV_LINKS.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.to === "/"}
-                className={({ isActive }) => (isActive ? "font-semibold underline" : "")}
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          {isAuthenticated ? (
-            <button type="button" onClick={logout}>
-              Log out
-            </button>
-          ) : (
-            <NavLink to="/login">Log in</NavLink>
-          )}
+          {NAV_LINKS.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              end={link.to === "/"}
+              className={({ isActive }) => (isActive ? "font-semibold underline" : "")}
+            >
+              {link.label}
+            </NavLink>
+          ))}
+          <button type="button" onClick={logout}>
+            Log out
+          </button>
         </nav>
       </header>
       <main className="px-4 pb-16">
         <Routes>
-          <Route path="/login" element={<Login />} />
           <Route
             path="/"
             element={
@@ -90,6 +84,17 @@ function App() {
         </Routes>
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      {/* Login owns its own full-screen layout (background image, centered
+          card) rather than sharing the authenticated app's header/nav chrome. */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/*" element={<AppShell />} />
+    </Routes>
   );
 }
 

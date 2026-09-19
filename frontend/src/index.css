@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "./styles/tokens.css";
 
@@ -14,7 +15,8 @@ body,
 body {
   margin: 0;
   color: var(--text);
-  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  font-family: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
 }
 
 /* Form controls need an explicit, opaque background + text color: they
