@@ -5,13 +5,13 @@ QMSR (21 CFR Part 820) / ISO 13485:2016 / cGMP (21 CFR Part 211) requirements,
 producing an evidence-linked gap report. See `DeviationTrace — Base System
 PRD` for the full product spec.
 
-**This repo currently implements Milestones 1–2 of 4**: the data model,
+**This repo currently implements Milestones 1–3 of 4**: the data model,
 Postgres schema, FastAPI skeleton, a starter regulatory clause library
-(deviation-handling and CAPA clauses only), and real document ingestion —
-PDF/Word/text extraction, rule-based section splitting for SOPs and deviation
-reports, and a keyword-based process-area detector. The cross-check matching
-engine and the full UI screens are not yet implemented — see "What's stubbed"
-below.
+(deviation-handling and CAPA clauses only), real document ingestion
+(PDF/Word/text extraction, rule-based section splitting, a keyword-based
+process-area detector), and a rule-based cross-check engine that generates
+real `Finding` rows. The full UI screens are not yet implemented — see
+"What's stubbed" below.
 
 ## Prerequisites
 
@@ -72,10 +72,26 @@ Open <http://localhost:5173>.
   "Full Document" section (extraction for it is explicitly deferred per the
   PRD).
 
+## What's real (Milestone 3)
+
+- After section extraction, `POST /documents/{id}/process` runs
+  `RuleBasedMatchingEngine` (`backend/app/core/matching/rule_based.py`)
+  against every `RegulatoryClause` applicable to the document's own
+  `(type, process_area)`, using each clause's curated `match_phrases` — a
+  clause with all its phrases present is fully addressed (no finding); zero
+  phrases found is `status="missing"`/`severity="critical"`; some-but-not-all
+  is `status="partial"`/`severity="major"`. `GET /findings` now returns real,
+  cited findings.
+- Reprocessing a document upserts findings by clause rather than
+  delete-and-recreate, so a `TriageDecision` a QA user already recorded is
+  never orphaned or silently dropped.
+- The matcher never produces `"contradicted"` findings (SOP vs. deviation
+  report disagreeing) — that needs real cross-document comparison, which is
+  explicitly out of scope for this rule-based v1 (see the PRD's own
+  rule-based-vs-LLM-assisted open question).
+
 ## What's stubbed (by design, for later milestones)
 
-- `GET /findings` and the findings dashboard have no real data — the
-  cross-check matching engine that produces findings is Milestone 3.
 - `GET /reports/{org_id}/export` returns `501 Not Implemented`.
 - The five frontend pages (Upload, Processing, Dashboard, Finding Detail,
   Report Export) are glassmorphism-styled shells with placeholder content —

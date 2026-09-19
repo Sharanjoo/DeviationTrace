@@ -8,6 +8,11 @@ clauses:
   - clause_number: "211.192"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation, batch_record]
+    expected_heading: "Investigation"
+    match_phrases:
+      - "thoroughly investigated"
+      - "conclusions and followup"
+      - "conclusions and follow-up"
     requirement_text: >
       Any unexplained discrepancy or the failure of a batch or any of its
       components to meet any of its specifications shall be thoroughly
@@ -19,6 +24,10 @@ clauses:
   - clause_number: "211.100(a)"
     process_area: capa
     document_type_applicability: [sop, batch_record]
+    expected_heading: "Corrective Action (CAPA)"
+    match_phrases:
+      - "production and process controls"
+      - "deviation shall be recorded"
     requirement_text: >
       There shall be written procedures for production and process controls
       designed to assure that the drug products have the identity, strength,
@@ -28,6 +37,9 @@ clauses:
   - clause_number: "211.100(b)"
     process_area: capa
     document_type_applicability: [sop, deviation]
+    expected_heading: "Corrective Action (CAPA)"
+    match_phrases:
+      - "recorded and justified"
     requirement_text: >
       Written production and process control procedures shall be followed in
       the execution of the various production and process control functions
@@ -37,6 +49,10 @@ clauses:
   - clause_number: "211.22(a)"
     process_area: deviation_handling
     document_type_applicability: [sop]
+    expected_heading: "Closure"
+    match_phrases:
+      - "quality control unit"
+      - "approve or reject"
     requirement_text: >
       The quality control unit shall have the responsibility and authority to
       approve or reject all procedures or specifications impacting the
@@ -47,6 +63,11 @@ clauses:
   - clause_number: "211.198(a)"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation]
+    expected_heading: "Investigation"
+    match_phrases:
+      - "complaint handling procedure"
+      - "investigation and its findings"
+      - "serious and unexpected"
     requirement_text: >
       Written procedures describing the handling of complaints shall be
       established, including provision for review to determine whether the

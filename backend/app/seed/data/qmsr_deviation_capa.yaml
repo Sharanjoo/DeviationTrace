@@ -8,6 +8,11 @@ clauses:
   - clause_number: "820.90(a)"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation]
+    expected_heading: "Description"
+    match_phrases:
+      - "identification of nonconforming product"
+      - "disposition of nonconforming product"
+      - "segregation of nonconforming product"
     requirement_text: >
       Establish and maintain procedures to control product that does not conform
       to specified requirements. Procedures must address the identification,
@@ -17,6 +22,11 @@ clauses:
   - clause_number: "820.90(b)"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation]
+    expected_heading: "Investigation"
+    match_phrases:
+      - "investigation was conducted"
+      - "notified the responsible"
+      - "investigation and its rationale"
     requirement_text: >
       The evaluation of nonconformance must include a determination of the need
       for an investigation and notification of the persons or organizations
@@ -26,6 +36,10 @@ clauses:
   - clause_number: "820.100(a)"
     process_area: capa
     document_type_applicability: [sop, deviation, batch_record]
+    expected_heading: "Corrective Action (CAPA)"
+    match_phrases:
+      - "corrective and preventive action procedure"
+      - "corrective and preventive action process"
     requirement_text: >
       Establish and maintain procedures for implementing corrective and
       preventive action, including requirements to analyze processes, work
@@ -36,6 +50,10 @@ clauses:
   - clause_number: "820.100(a)(2)"
     process_area: capa
     document_type_applicability: [sop, deviation]
+    expected_heading: "Root Cause"
+    match_phrases:
+      - "root cause investigation"
+      - "investigated the cause"
     requirement_text: >
       Investigate the cause of nonconformities relating to product, processes,
       and the quality system. The investigation must be commensurate with the
@@ -44,6 +62,11 @@ clauses:
   - clause_number: "820.100(a)(3)"
     process_area: capa
     document_type_applicability: [sop, deviation]
+    expected_heading: "Corrective Action (CAPA)"
+    match_phrases:
+      - "verify the corrective action"
+      - "validate the corrective action"
+      - "effectiveness of the corrective action"
     requirement_text: >
       Identify the action(s) needed to correct and prevent recurrence of
       nonconforming product and other quality problems, and verify or validate
@@ -53,6 +76,10 @@ clauses:
   - clause_number: "820.100(a)(6)"
     process_area: capa
     document_type_applicability: [sop, deviation]
+    expected_heading: "Closure"
+    match_phrases:
+      - "management review"
+      - "disseminated to those directly responsible"
     requirement_text: >
       Ensure that information related to quality problems and corrective and
       preventive actions is disseminated to those directly responsible for
@@ -62,6 +89,10 @@ clauses:
   - clause_number: "820.198(a)"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation]
+    expected_heading: "Description"
+    match_phrases:
+      - "complaint file"
+      - "complaint handling procedure"
     requirement_text: >
       Maintain complaint files, and establish and maintain procedures for
       receiving, reviewing, and evaluating complaints. Where a complaint

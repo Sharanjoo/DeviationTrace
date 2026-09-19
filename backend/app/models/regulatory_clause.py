@@ -21,5 +21,7 @@ class RegulatoryClause(Base):
     process_area: Mapped[str] = mapped_column(String(64), nullable=False)
     document_type_applicability: Mapped[list[str]] = mapped_column(ARRAY(String(32)), nullable=False)
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    match_phrases: Mapped[list[str]] = mapped_column(ARRAY(String(255)), nullable=False, default=list)
+    expected_heading: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     findings: Mapped[list["Finding"]] = relationship(back_populates="clause")

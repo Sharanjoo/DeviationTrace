@@ -13,3 +13,5 @@ class RegulatoryClauseOut(BaseModel):
     process_area: str
     document_type_applicability: list[str]
     version: int
+    match_phrases: list[str]
+    expected_heading: str | None

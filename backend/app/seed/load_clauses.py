@@ -39,6 +39,8 @@ def load_clauses() -> None:
                     "requirement_text": entry["requirement_text"].strip(),
                     "process_area": entry["process_area"],
                     "document_type_applicability": entry["document_type_applicability"],
+                    "match_phrases": entry.get("match_phrases", []),
+                    "expected_heading": entry.get("expected_heading"),
                 }
                 if existing:
                     for key, value in fields.items():
