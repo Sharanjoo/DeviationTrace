@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { GlassPanel, SeverityChip } from "../components/GlassPanel";
+import { GlassPanel, SeverityChip, TriageChip } from "../components/GlassPanel";
 import { api, ApiError } from "../api/client";
+import type { TriageDecisionValue } from "../triage";
 
 interface FindingOut {
   id: string;
@@ -10,6 +11,7 @@ interface FindingOut {
   status: string;
   severity: "critical" | "major" | "minor";
   explanation: string;
+  triage_decision: { decision: TriageDecisionValue } | null;
 }
 
 const SEVERITIES = ["critical", "major", "minor"];
@@ -110,7 +112,10 @@ export function Dashboard() {
                   </div>
                   <p className="mt-2 text-sm">{finding.explanation}</p>
                 </div>
-                <SeverityChip severity={finding.severity} />
+                <div className="flex flex-col items-end gap-2">
+                  <SeverityChip severity={finding.severity} />
+                  <TriageChip decision={finding.triage_decision?.decision} />
+                </div>
               </GlassPanel>
             </Link>
           ))}

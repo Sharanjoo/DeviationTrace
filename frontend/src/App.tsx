@@ -7,11 +7,13 @@ import { FindingDetail } from "./pages/FindingDetail";
 import { Login } from "./pages/Login";
 import { Processing } from "./pages/Processing";
 import { ReportExport } from "./pages/ReportExport";
+import { Review } from "./pages/Review";
 import { Upload } from "./pages/Upload";
 
 const NAV_LINKS = [
   { to: "/", label: "Upload" },
   { to: "/findings", label: "Findings" },
+  { to: "/review", label: "Review" },
   { to: "/report", label: "Report" },
 ];
 
@@ -70,6 +72,14 @@ function AppShell() {
             element={
               <RequireAuth>
                 <FindingDetail />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/review"
+            element={
+              <RequireAuth>
+                <Review />
               </RequireAuth>
             }
           />
