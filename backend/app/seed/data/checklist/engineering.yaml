@@ -1,0 +1,34 @@
+# DRAFT internal-audit checklist — Engineering department.
+# Illustrative starter content — see qc.yaml header for the SME-review caveat.
+department: engineering
+items:
+  - item_name: "Design History File"
+    citation: "21 CFR 820.30(j) / ISO 13485 Clause 7.3"
+    match_phrases:
+      - "design history file"
+      - "design and development file"
+    requirement_text: >
+      A design history file shall be established and maintained for each
+      device type, containing or referencing the records necessary to
+      demonstrate the design was developed in accordance with the approved
+      design plan.
+
+  - item_name: "Risk Management File"
+    citation: "ISO 14971 / ISO 13485 Clause 7.1"
+    match_phrases:
+      - "risk management file"
+      - "risk management report"
+    requirement_text: >
+      A risk management file shall be established and maintained
+      demonstrating that risk management activities were performed
+      throughout the product lifecycle per ISO 14971.
+
+  - item_name: "Engineering Change Order Log"
+    citation: "Company SOP-ENG-007"
+    match_phrases:
+      - "engineering change order"
+      - "change order log"
+    requirement_text: >
+      Changes to device design or specifications shall be logged and
+      approved via the engineering change order process before
+      implementation.

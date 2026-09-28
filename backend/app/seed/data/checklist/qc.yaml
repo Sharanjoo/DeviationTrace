@@ -1,0 +1,34 @@
+# DRAFT internal-audit checklist — Quality Control department.
+# Illustrative starter content written from general regulatory knowledge for
+# Phase 1 scaffolding. NOT verified against the current standard text or the
+# company's own SOP numbering. Must be reviewed and corrected by a qualified
+# SME per department before any real audit-readiness use.
+department: qc
+items:
+  - item_name: "Equipment Calibration Records"
+    citation: "ISO 13485 Clause 7.6"
+    match_phrases:
+      - "calibration record"
+      - "calibration log"
+    requirement_text: >
+      Monitoring and measuring equipment used to provide evidence of
+      conformity shall be calibrated at specified intervals, with records
+      maintained of the results.
+
+  - item_name: "Incoming Inspection Report"
+    citation: "ISO 13485 Clause 7.4.3"
+    match_phrases:
+      - "incoming inspection"
+      - "receiving inspection"
+    requirement_text: >
+      Purchased product shall be verified as meeting specified purchasing
+      requirements before use, with records of the verification retained.
+
+  - item_name: "Out-of-Specification Investigation Log"
+    citation: "Company SOP-QC-014"
+    match_phrases:
+      - "out-of-specification"
+      - "oos investigation"
+    requirement_text: >
+      Test results falling outside approved specifications shall be logged
+      and investigated per the site's OOS procedure.

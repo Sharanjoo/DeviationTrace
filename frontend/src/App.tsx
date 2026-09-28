@@ -2,6 +2,7 @@ import { NavLink, Route, Routes } from "react-router-dom";
 import { Background } from "./components/Background";
 import { RequireAuth } from "./components/RequireAuth";
 import { useAuth } from "./context/AuthContext";
+import { AuditSimulation } from "./pages/AuditSimulation";
 import { Dashboard } from "./pages/Dashboard";
 import { FindingDetail } from "./pages/FindingDetail";
 import { Login } from "./pages/Login";
@@ -15,6 +16,7 @@ const NAV_LINKS = [
   { to: "/findings", label: "Findings" },
   { to: "/review", label: "Review" },
   { to: "/report", label: "Report" },
+  { to: "/audit-simulation", label: "Audit" },
 ];
 
 function AppShell() {
@@ -88,6 +90,14 @@ function AppShell() {
             element={
               <RequireAuth>
                 <ReportExport />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/audit-simulation"
+            element={
+              <RequireAuth>
+                <AuditSimulation />
               </RequireAuth>
             }
           />

@@ -31,6 +31,8 @@ class DocumentOut(BaseModel):
     type: str
     title: str
     process_area: str
+    department: str | None = None
+    vendor_category: str | None = None
     status: str
     detected_process_area: str | None = None
     processing_error: str | None = None

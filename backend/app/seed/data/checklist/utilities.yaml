@@ -1,0 +1,32 @@
+# DRAFT internal-audit checklist — Utilities department.
+# Illustrative starter content — see qc.yaml header for the SME-review caveat.
+department: utilities
+items:
+  - item_name: "Water System Validation Report"
+    citation: "ISO 13485 Clause 7.5.6 / Company SOP-UT-002"
+    match_phrases:
+      - "water system validation"
+      - "purified water validation"
+    requirement_text: >
+      Utility systems whose output cannot be fully verified by subsequent
+      monitoring (e.g. water systems) shall be validated, with records of the
+      validation maintained.
+
+  - item_name: "HVAC Qualification Report"
+    citation: "Company SOP-UT-005"
+    match_phrases:
+      - "hvac qualification"
+      - "air handling qualification"
+    requirement_text: >
+      HVAC systems supporting controlled environments shall be qualified and
+      periodically requalified per the site's utility qualification program.
+
+  - item_name: "Utility Monitoring Log"
+    citation: "Company SOP-UT-009"
+    match_phrases:
+      - "utility monitoring log"
+      - "environmental monitoring log"
+    requirement_text: >
+      Ongoing monitoring of qualified utility systems (temperature,
+      humidity, differential pressure, water quality) shall be logged at the
+      frequency defined in the utility monitoring plan.

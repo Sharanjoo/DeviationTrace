@@ -1,0 +1,41 @@
+# DRAFT vendor-audit standards library — Raw Material Supplier category.
+# Illustrative starter content written from general regulatory knowledge for
+# Module 2 (Vendor Audit Cross-Check) scaffolding. NOT verified against the
+# current standard text. Must be reviewed and corrected by a qualified SME
+# per vendor category before any real audit-readiness use.
+vendor_category: raw_material_supplier
+standards:
+  - requirement_name: "Certificate of Analysis per lot"
+    citation: "21 CFR 211.84(d) / ISO 13485 Clause 7.4.3"
+    expected_heading: "Certificate of Analysis"
+    match_phrases:
+      - "certificate of analysis"
+      - "lot-specific test results"
+    requirement_text: >
+      The vendor's own quality records shall demonstrate that a certificate
+      of analysis, including lot-specific test results, is issued and
+      reviewed for each lot of raw material supplied, confirming conformance
+      to specification before release to the manufacturer.
+
+  - requirement_name: "Supplier Qualification Assessment"
+    citation: "ISO 13485 Clause 7.4.1"
+    expected_heading: "Supplier Qualification"
+    match_phrases:
+      - "supplier qualification"
+      - "approved supplier list"
+    requirement_text: >
+      The vendor shall be able to demonstrate its own qualification status
+      (e.g. appearing on the manufacturer's approved supplier list and
+      having undergone a documented supplier qualification assessment)
+      appropriate to the material's effect on product quality.
+
+  - requirement_name: "Change Notification Agreement"
+    citation: "ISO 13485 Clause 7.4.3 / Company SOP-PUR-003"
+    expected_heading: "Change Notification"
+    match_phrases:
+      - "change notification"
+      - "notify the manufacturer of any change"
+    requirement_text: >
+      The vendor shall have an agreement in place to notify the manufacturer
+      of any change to raw material formulation, manufacturing site, or
+      specification in advance of implementation.

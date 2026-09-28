@@ -13,9 +13,11 @@ class Document(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     org_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("organizations.id"), nullable=False, index=True)
-    type: Mapped[str] = mapped_column(String(32), nullable=False)  # "sop" | "deviation" | "batch_record"
+    type: Mapped[str] = mapped_column(String(32), nullable=False)  # "sop" | "deviation" | "batch_record" | "report"
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     process_area: Mapped[str] = mapped_column(String(64), nullable=False)
+    department: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    vendor_category: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
     file_ref: Mapped[str] = mapped_column(String(512), nullable=False)  # local path today, S3 key later
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="uploaded")
     processing_error: Mapped[str | None] = mapped_column(Text, nullable=True)

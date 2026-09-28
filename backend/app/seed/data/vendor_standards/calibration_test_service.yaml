@@ -1,0 +1,40 @@
+# DRAFT vendor-audit standards library — Calibration / Testing Service
+# category. Illustrative starter content written from general regulatory
+# knowledge for Module 2 (Vendor Audit Cross-Check) scaffolding. NOT
+# verified against the current standard text. Must be reviewed and
+# corrected by a qualified SME per vendor category before any real
+# audit-readiness use.
+vendor_category: calibration_test_service
+standards:
+  - requirement_name: "Traceable Reference Standards"
+    citation: "ISO/IEC 17025 Clause 6.5 / ISO 13485 Clause 7.6"
+    expected_heading: "Reference Standards"
+    match_phrases:
+      - "nist-traceable"
+      - "traceable reference standard"
+    requirement_text: >
+      The calibration service shall demonstrate that its reference
+      standards are traceable to a national metrology standard for every
+      parameter it certifies.
+
+  - requirement_name: "Calibration Certificate Issued"
+    citation: "ISO/IEC 17025 Clause 7.8"
+    expected_heading: "Calibration Certificate"
+    match_phrases:
+      - "calibration certificate"
+      - "uncertainty of measurement"
+    requirement_text: >
+      A calibration certificate stating the uncertainty of measurement
+      shall be issued for each instrument calibrated on the manufacturer's
+      behalf.
+
+  - requirement_name: "Accreditation Scope Covers Service"
+    citation: "Company SOP-QC-009"
+    expected_heading: "Accreditation Scope"
+    match_phrases:
+      - "accreditation scope"
+      - "iso/iec 17025 accredited"
+    requirement_text: >
+      The service provider shall be ISO/IEC 17025 accredited, and the
+      specific measurement performed for the manufacturer shall fall
+      within its published accreditation scope.

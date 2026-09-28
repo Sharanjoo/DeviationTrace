@@ -1,0 +1,40 @@
+# DRAFT vendor-audit standards library — Packaging Component Supplier
+# category. Illustrative starter content written from general regulatory
+# knowledge for Module 2 (Vendor Audit Cross-Check) scaffolding. NOT
+# verified against the current standard text. Must be reviewed and
+# corrected by a qualified SME per vendor category before any real
+# audit-readiness use.
+vendor_category: packaging_component_supplier
+standards:
+  - requirement_name: "Packaging Material Specification Conformance"
+    citation: "ISO 11607-1 / ISO 13485 Clause 7.4.3"
+    expected_heading: "Material Specification"
+    match_phrases:
+      - "material specification"
+      - "conforms to specification"
+    requirement_text: >
+      The supplier shall demonstrate that each packaging component lot
+      conforms to specification against the manufacturer's material
+      specification.
+
+  - requirement_name: "Seal Integrity Test Report"
+    citation: "ISO 11607-1 Clause 5 / Company SOP-PKG-004"
+    expected_heading: "Seal Integrity"
+    match_phrases:
+      - "seal integrity"
+      - "seal strength test"
+    requirement_text: >
+      The supplier shall provide seal integrity test results, including a
+      seal strength test, appropriate to the packaging system's intended
+      barrier performance.
+
+  - requirement_name: "Shelf-Life / Aging Support"
+    citation: "ISO 11607-1 Clause 6 / ASTM F1980"
+    expected_heading: "Shelf-Life Support"
+    match_phrases:
+      - "accelerated aging"
+      - "shelf-life claim"
+    requirement_text: >
+      The supplier shall support the packaging system's shelf-life claim
+      with accelerated aging (or real-time equivalent) data appropriate to
+      the intended shelf life.

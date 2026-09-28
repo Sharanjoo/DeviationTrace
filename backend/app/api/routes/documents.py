@@ -18,7 +18,15 @@ from app.schemas.document import DocumentDetailOut, DocumentOut, DocumentStatusO
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
-VALID_TYPES = {"sop", "deviation", "batch_record"}
+VALID_TYPES = {"sop", "deviation", "batch_record", "report", "vendor_audit_report"}
+VALID_DEPARTMENTS = {"qc", "qa", "utilities", "manufacturing", "engineering"}
+VALID_VENDOR_CATEGORIES = {
+    "raw_material_supplier",
+    "contract_manufacturer",
+    "calibration_test_service",
+    "sterilization_service",
+    "packaging_component_supplier",
+}
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".txt"}
 
 
@@ -67,12 +75,23 @@ def _upsert_findings(db: Session, document_id: uuid.UUID, new_findings: list[Fin
 def upload_document(
     type: str = Form(...),
     process_area: str = Form(...),
+    department: str | None = Form(default=None),
+    vendor_category: str | None = Form(default=None),
     file: UploadFile = File(...),
     current: CurrentOrg = Depends(get_current_org),
     db: Session = Depends(get_db),
 ) -> Document:
     if type not in VALID_TYPES:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"type must be one of {VALID_TYPES}")
+    if department is not None and department not in VALID_DEPARTMENTS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"department must be one of {VALID_DEPARTMENTS}"
+        )
+    if vendor_category is not None and vendor_category not in VALID_VENDOR_CATEGORIES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"vendor_category must be one of {VALID_VENDOR_CATEGORIES}",
+        )
 
     extension = Path(file.filename or "").suffix.lower()
     if extension not in ALLOWED_EXTENSIONS:
@@ -89,6 +108,8 @@ def upload_document(
         type=type,
         title=file.filename or "untitled",
         process_area=process_area,
+        department=department,
+        vendor_category=vendor_category,
         file_ref=file_ref,
         status="uploaded",
     )

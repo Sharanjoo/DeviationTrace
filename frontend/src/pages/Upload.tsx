@@ -19,6 +19,18 @@ const DOCUMENT_TYPES = [
   { value: "sop", label: "SOP" },
   { value: "deviation", label: "Deviation report" },
   { value: "batch_record", label: "Batch / device record" },
+  { value: "report", label: "Department report" },
+];
+
+// The internal-audit checklist departments (Phase 1). Department reports
+// don't have a meaningful process area, so the backend just wants the
+// fixed placeholder "general" — see the report-branch in handleSubmit.
+const DEPARTMENTS = [
+  { value: "qc", label: "QC" },
+  { value: "qa", label: "QA" },
+  { value: "utilities", label: "Utilities" },
+  { value: "manufacturing", label: "Manufacturing" },
+  { value: "engineering", label: "Engineering" },
 ];
 
 export function Upload() {
@@ -26,8 +38,11 @@ export function Upload() {
   const [file, setFile] = useState<File | null>(null);
   const [type, setType] = useState("sop");
   const [processArea, setProcessArea] = useState("deviation_handling");
+  const [department, setDepartment] = useState("qc");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const isDepartmentReport = type === "report";
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -35,13 +50,22 @@ export function Upload() {
       setError("Choose a file to upload.");
       return;
     }
+    if (isDepartmentReport && !department) {
+      setError("Choose a department.");
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
       const formData = new FormData();
       formData.append("type", type);
-      formData.append("process_area", processArea);
       formData.append("file", file);
+      if (isDepartmentReport) {
+        formData.append("process_area", "general");
+        formData.append("department", department);
+      } else {
+        formData.append("process_area", processArea);
+      }
       const document = await api.upload<DocumentOut>("/documents", formData);
       navigate(`/processing/${document.id}`);
     } catch (err) {
@@ -94,21 +118,39 @@ export function Upload() {
             </select>
           </label>
 
-          <label className="flex-1 text-sm">
-            Process area
-            <select
-              className="mt-1 w-full rounded-lg border px-3 py-2"
-              style={{ borderColor: "var(--glass-border)" }}
-              value={processArea}
-              onChange={(e) => setProcessArea(e.target.value)}
-            >
-              {PROCESS_AREAS.map((p) => (
-                <option key={p.value} value={p.value}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          {isDepartmentReport ? (
+            <label className="flex-1 text-sm">
+              Department
+              <select
+                className="mt-1 w-full rounded-lg border px-3 py-2"
+                style={{ borderColor: "var(--glass-border)" }}
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+              >
+                {DEPARTMENTS.map((d) => (
+                  <option key={d.value} value={d.value}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <label className="flex-1 text-sm">
+              Process area
+              <select
+                className="mt-1 w-full rounded-lg border px-3 py-2"
+                style={{ borderColor: "var(--glass-border)" }}
+                value={processArea}
+                onChange={(e) => setProcessArea(e.target.value)}
+              >
+                {PROCESS_AREAS.map((p) => (
+                  <option key={p.value} value={p.value}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
         </div>
 
         {error && <p style={{ color: "var(--severity-critical)" }}>{error}</p>}

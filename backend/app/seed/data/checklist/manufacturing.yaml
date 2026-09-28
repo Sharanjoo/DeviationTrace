@@ -1,0 +1,30 @@
+# DRAFT internal-audit checklist — Manufacturing department.
+# Illustrative starter content — see qc.yaml header for the SME-review caveat.
+department: manufacturing
+items:
+  - item_name: "Device History Record"
+    citation: "21 CFR 820.184 / QMSR"
+    match_phrases:
+      - "device history record"
+      - "batch record"
+    requirement_text: >
+      Each manufacturer shall maintain device history records that
+      demonstrate the device is manufactured in accordance with the device
+      master record.
+
+  - item_name: "Process Validation Report"
+    citation: "ISO 13485 Clause 7.5.6"
+    match_phrases:
+      - "process validation"
+    requirement_text: >
+      Processes for production whose output cannot be verified by
+      subsequent monitoring shall be validated, with records maintained.
+
+  - item_name: "Equipment Maintenance Log"
+    citation: "Company SOP-MFG-011"
+    match_phrases:
+      - "equipment maintenance log"
+      - "preventive maintenance log"
+    requirement_text: >
+      Production equipment shall be maintained per a documented preventive
+      maintenance schedule, with completed maintenance logged.

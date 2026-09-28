@@ -1,0 +1,39 @@
+# DRAFT vendor-audit standards library — Sterilization Service category.
+# Illustrative starter content written from general regulatory knowledge for
+# Module 2 (Vendor Audit Cross-Check) scaffolding. NOT verified against the
+# current standard text. Must be reviewed and corrected by a qualified SME
+# per vendor category before any real audit-readiness use.
+vendor_category: sterilization_service
+standards:
+  - requirement_name: "Validated Sterilization Cycle"
+    citation: "ISO 11135 / ISO 13485 Clause 7.5.6"
+    expected_heading: "Sterilization Cycle Validation"
+    match_phrases:
+      - "cycle validation"
+      - "sterilization cycle"
+    requirement_text: >
+      The sterilization service shall run each lot per a validated cycle
+      validation protocol confirming exposure parameters meet the qualified
+      sterilization cycle envelope for the device family.
+
+  - requirement_name: "Biological Indicator Results"
+    citation: "ISO 11138 / ISO 13485 Clause 7.5.6"
+    expected_heading: "Biological Indicators"
+    match_phrases:
+      - "biological indicator"
+      - "bacillus atrophaeus"
+    requirement_text: >
+      Biological indicators placed at qualified worst-case load locations,
+      including the spore organism (typically Bacillus atrophaeus) and
+      population used, shall be reported for each sterilization run.
+
+  - requirement_name: "Dose Audit / Bioburden Report"
+    citation: "ISO 11137 / Company SOP-STR-002"
+    expected_heading: "Dose Audit"
+    match_phrases:
+      - "dose audit"
+      - "bioburden"
+    requirement_text: >
+      The service shall provide pre-sterilization bioburden testing and
+      periodic dose audit re-verification documentation for the load
+      configuration used.

@@ -1,0 +1,30 @@
+# DRAFT internal-audit checklist — Quality Assurance department.
+# Illustrative starter content — see qc.yaml header for the SME-review caveat.
+department: qa
+items:
+  - item_name: "Internal Audit Schedule & Reports"
+    citation: "ISO 13485 Clause 8.2.4"
+    match_phrases:
+      - "internal audit"
+      - "audit schedule"
+    requirement_text: >
+      The organization shall conduct internal audits at planned intervals to
+      determine whether the quality management system conforms to planned
+      arrangements and is effectively implemented and maintained.
+
+  - item_name: "Management Review Minutes"
+    citation: "ISO 13485 Clause 5.6"
+    match_phrases:
+      - "management review"
+    requirement_text: >
+      Top management shall review the quality management system at planned
+      intervals, with records of the review maintained.
+
+  - item_name: "CAPA Log"
+    citation: "ISO 13485 Clause 8.5.2"
+    match_phrases:
+      - "capa log"
+      - "corrective and preventive action log"
+    requirement_text: >
+      A log of corrective and preventive actions shall be maintained,
+      tracking each action from initiation through effectiveness review.

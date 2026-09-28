@@ -1,0 +1,39 @@
+# DRAFT vendor-audit standards library — Contract Manufacturer / CMO category.
+# Illustrative starter content written from general regulatory knowledge for
+# Module 2 (Vendor Audit Cross-Check) scaffolding. NOT verified against the
+# current standard text. Must be reviewed and corrected by a qualified SME
+# per vendor category before any real audit-readiness use.
+vendor_category: contract_manufacturer
+standards:
+  - requirement_name: "Quality Agreement in Place"
+    citation: "21 CFR 211.22 / ISO 13485 Clause 4.1.5"
+    expected_heading: "Quality Agreement"
+    match_phrases:
+      - "quality agreement"
+      - "roles and responsibilities"
+    requirement_text: >
+      A current quality agreement between the manufacturer and the contract
+      manufacturer shall define roles and responsibilities for batch
+      disposition, change control, and deviation escalation.
+
+  - requirement_name: "Batch Release Procedure"
+    citation: "21 CFR 211.192 / ISO 13485 Clause 7.5.1"
+    expected_heading: "Batch Release"
+    match_phrases:
+      - "batch release procedure"
+      - "release testing"
+    requirement_text: >
+      The contract manufacturer shall have a written batch release procedure
+      describing release testing and who holds final release authority for
+      each batch produced on the manufacturer's behalf.
+
+  - requirement_name: "Deviation Reporting to Client"
+    citation: "Company SOP-QA-018"
+    expected_heading: "Deviation Reporting"
+    match_phrases:
+      - "deviation reporting"
+      - "notify the client within"
+    requirement_text: >
+      The contract manufacturer shall have a deviation reporting process
+      that commits to notify the client within a defined timeframe of any
+      manufacturing deviation affecting the client's product.
