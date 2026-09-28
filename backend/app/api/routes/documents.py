@@ -1,7 +1,7 @@
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.core.matching.base import FindingData
@@ -117,6 +117,24 @@ def upload_document(
     db.commit()
     db.refresh(document)
     return document
+
+
+@router.get("", response_model=list[DocumentOut])
+def list_documents(
+    type: str | None = Query(default=None),
+    status_: str | None = Query(default=None, alias="status"),
+    vendor_category: str | None = Query(default=None),
+    current: CurrentOrg = Depends(get_current_org),
+    db: Session = Depends(get_db),
+) -> list[Document]:
+    query = db.query(Document).filter(Document.org_id == current.org_id)
+    if type:
+        query = query.filter(Document.type == type)
+    if status_:
+        query = query.filter(Document.status == status_)
+    if vendor_category:
+        query = query.filter(Document.vendor_category == vendor_category)
+    return query.order_by(Document.uploaded_at.desc()).all()
 
 
 @router.get("/{document_id}", response_model=DocumentDetailOut)

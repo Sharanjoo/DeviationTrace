@@ -10,6 +10,7 @@ import { Processing } from "./pages/Processing";
 import { ReportExport } from "./pages/ReportExport";
 import { Review } from "./pages/Review";
 import { Upload } from "./pages/Upload";
+import { VendorAudit } from "./pages/VendorAudit";
 
 const NAV_LINKS = [
   { to: "/", label: "Upload" },
@@ -17,6 +18,7 @@ const NAV_LINKS = [
   { to: "/review", label: "Review" },
   { to: "/report", label: "Report" },
   { to: "/audit-simulation", label: "Audit" },
+  { to: "/vendor-audit", label: "Vendor Audit" },
 ];
 
 function AppShell() {
@@ -98,6 +100,14 @@ function AppShell() {
             element={
               <RequireAuth>
                 <AuditSimulation />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/vendor-audit"
+            element={
+              <RequireAuth>
+                <VendorAudit />
               </RequireAuth>
             }
           />

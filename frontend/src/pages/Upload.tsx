@@ -20,6 +20,7 @@ const DOCUMENT_TYPES = [
   { value: "deviation", label: "Deviation report" },
   { value: "batch_record", label: "Batch / device record" },
   { value: "report", label: "Department report" },
+  { value: "vendor_audit_report", label: "Vendor audit report" },
 ];
 
 // The internal-audit checklist departments (Phase 1). Department reports
@@ -33,16 +34,28 @@ const DEPARTMENTS = [
   { value: "engineering", label: "Engineering" },
 ];
 
+// The vendor/material categories the vendor-standards library covers
+// (Phase 2). Same "general" process-area placeholder as department reports.
+const VENDOR_CATEGORIES = [
+  { value: "raw_material_supplier", label: "Raw material supplier" },
+  { value: "contract_manufacturer", label: "Contract manufacturer" },
+  { value: "calibration_test_service", label: "Calibration / test service" },
+  { value: "sterilization_service", label: "Sterilization service" },
+  { value: "packaging_component_supplier", label: "Packaging component supplier" },
+];
+
 export function Upload() {
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [type, setType] = useState("sop");
   const [processArea, setProcessArea] = useState("deviation_handling");
   const [department, setDepartment] = useState("qc");
+  const [vendorCategory, setVendorCategory] = useState("raw_material_supplier");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const isDepartmentReport = type === "report";
+  const isVendorAuditReport = type === "vendor_audit_report";
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -54,6 +67,10 @@ export function Upload() {
       setError("Choose a department.");
       return;
     }
+    if (isVendorAuditReport && !vendorCategory) {
+      setError("Choose a vendor category.");
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
@@ -63,6 +80,9 @@ export function Upload() {
       if (isDepartmentReport) {
         formData.append("process_area", "general");
         formData.append("department", department);
+      } else if (isVendorAuditReport) {
+        formData.append("process_area", "general");
+        formData.append("vendor_category", vendorCategory);
       } else {
         formData.append("process_area", processArea);
       }
@@ -130,6 +150,22 @@ export function Upload() {
                 {DEPARTMENTS.map((d) => (
                   <option key={d.value} value={d.value}>
                     {d.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : isVendorAuditReport ? (
+            <label className="flex-1 text-sm">
+              Vendor category
+              <select
+                className="mt-1 w-full rounded-lg border px-3 py-2"
+                style={{ borderColor: "var(--glass-border)" }}
+                value={vendorCategory}
+                onChange={(e) => setVendorCategory(e.target.value)}
+              >
+                {VENDOR_CATEGORIES.map((v) => (
+                  <option key={v.value} value={v.value}>
+                    {v.label}
                   </option>
                 ))}
               </select>

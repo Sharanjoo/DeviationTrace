@@ -81,6 +81,40 @@ def test_upload_rejects_disallowed_extension():
     assert response.status_code == 422
 
 
+def test_list_documents_filters_by_type_and_scopes_by_org():
+    token_a = _register()
+    headers_a = _auth_headers(token_a)
+    token_b = _register()
+    headers_b = _auth_headers(token_b)
+
+    client.post(
+        "/documents",
+        headers=headers_a,
+        data={"type": "sop", "process_area": "deviation_handling"},
+        files={"file": ("sop.docx", _sop_docx_bytes(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document")},
+    )
+    client.post(
+        "/documents",
+        headers=headers_a,
+        data={"type": "deviation", "process_area": "capa"},
+        files={"file": ("dev.docx", _sop_docx_bytes(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document")},
+    )
+    client.post(
+        "/documents",
+        headers=headers_b,
+        data={"type": "sop", "process_area": "deviation_handling"},
+        files={"file": ("other-org-sop.docx", _sop_docx_bytes(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document")},
+    )
+
+    all_docs = client.get("/documents", headers=headers_a)
+    assert all_docs.status_code == 200
+    assert {d["type"] for d in all_docs.json()} == {"sop", "deviation"}
+    assert all(d["title"] != "other-org-sop.docx" for d in all_docs.json())
+
+    sop_only = client.get("/documents", headers=headers_a, params={"type": "sop"})
+    assert [d["type"] for d in sop_only.json()] == ["sop"]
+
+
 def test_process_failure_sets_failed_status_not_500():
     token = _register()
     headers = _auth_headers(token)
