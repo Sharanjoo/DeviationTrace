@@ -6,7 +6,7 @@
 vendor_category: contract_manufacturer
 standards:
   - requirement_name: "Quality Agreement in Place"
-    citation: "21 CFR 211.22 / ISO 13485 Clause 4.1.5"
+    citation: "21 CFR 211.22 / ISO 13485 Clause 4.1"
     expected_heading: "Quality Agreement"
     match_phrases:
       - "quality agreement"

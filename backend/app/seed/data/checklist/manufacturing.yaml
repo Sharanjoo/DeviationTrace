@@ -3,7 +3,7 @@
 department: manufacturing
 items:
   - item_name: "Device History Record"
-    citation: "21 CFR 820.184 / QMSR"
+    citation: "QMSR / ISO 13485 Clause 7.5.1"
     match_phrases:
       - "device history record"
       - "batch record"

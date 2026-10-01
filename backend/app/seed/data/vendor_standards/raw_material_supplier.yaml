@@ -30,7 +30,7 @@ standards:
       appropriate to the material's effect on product quality.
 
   - requirement_name: "Change Notification Agreement"
-    citation: "ISO 13485 Clause 7.4.3 / Company SOP-PUR-003"
+    citation: "ISO 13485 Clause 7.4.2 / Company SOP-PUR-003"
     expected_heading: "Change Notification"
     match_phrases:
       - "change notification"

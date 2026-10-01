@@ -21,7 +21,7 @@ items:
       intervals, with records of the review maintained.
 
   - item_name: "CAPA Log"
-    citation: "ISO 13485 Clause 8.5.2"
+    citation: "ISO 13485 Clause 8.5.2 / 8.5.3"
     match_phrases:
       - "capa log"
       - "corrective and preventive action log"

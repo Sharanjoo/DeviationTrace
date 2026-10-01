@@ -36,7 +36,7 @@ def _clause(**kwargs) -> RegulatoryClause:
     return RegulatoryClause(
         id=uuid.uuid4(),
         regulation=kwargs.get("regulation", "qmsr"),
-        clause_number=kwargs.get("clause_number", "820.100(a)(3)"),
+        clause_number=kwargs.get("clause_number", "8.5.2(e)"),
         requirement_text="Verify or validate corrective action effectiveness.",
         process_area=kwargs.get("process_area", "capa"),
         document_type_applicability=["sop", "deviation"],

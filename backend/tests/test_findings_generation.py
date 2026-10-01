@@ -86,7 +86,7 @@ def test_sparse_sop_produces_missing_finding_with_citations():
     findings = client.get("/findings", headers=_headers(token), params={"document_id": document_id}).json()
     assert len(findings) > 0
 
-    target = next(f for f in findings if f["clause"]["clause_number"] == "820.100(a)(3)")
+    target = next(f for f in findings if f["clause"]["clause_number"] == "8.5.2(e)")
     assert target["status"] == "missing"
     assert target["severity"] == "critical"
     assert target["clause"]["regulation"] == "qmsr"

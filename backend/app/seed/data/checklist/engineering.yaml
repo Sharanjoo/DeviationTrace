@@ -3,7 +3,7 @@
 department: engineering
 items:
   - item_name: "Design History File"
-    citation: "21 CFR 820.30(j) / ISO 13485 Clause 7.3"
+    citation: "ISO 13485 Clause 7.3.10"
     match_phrases:
       - "design history file"
       - "design and development file"
