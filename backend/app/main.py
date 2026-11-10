@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import audit_simulation, auth, clauses, documents, findings, reports, vendor_audit
+from app.api.routes import audit_simulation, auth, clauses, documents, findings, onboarding, reports, vendor_audit
 
 app = FastAPI(title="DeviationTrace API", version="0.1.0")
 
@@ -20,6 +20,7 @@ app.include_router(clauses.router)
 app.include_router(reports.router)
 app.include_router(audit_simulation.router)
 app.include_router(vendor_audit.router)
+app.include_router(onboarding.router)
 
 
 @app.get("/health")

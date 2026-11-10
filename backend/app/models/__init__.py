@@ -3,6 +3,7 @@ from app.models.audit_checklist_item import AuditChecklistItem
 from app.models.document import Document
 from app.models.document_section import DocumentSection
 from app.models.finding import Finding
+from app.models.org_checklist_exclusion import OrgChecklistExclusion
 from app.models.organization import Organization
 from app.models.regulatory_clause import RegulatoryClause
 from app.models.triage_decision import TriageDecision
@@ -16,6 +17,7 @@ __all__ = [
     "Document",
     "DocumentSection",
     "Finding",
+    "OrgChecklistExclusion",
     "Organization",
     "RegulatoryClause",
     "TriageDecision",

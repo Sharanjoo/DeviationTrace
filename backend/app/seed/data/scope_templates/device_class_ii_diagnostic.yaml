@@ -1,0 +1,228 @@
+# Onboarding skeleton — Class II Diagnostic / Monitoring Device Manufacturer.
+# Modeled on two real documents: a TÜV Rheinland ISO 13485:2016
+# certification audit report for a real Class II device manufacturer
+# (digital thermometers, sphygmomanometers, stethoscopes), and the MSECB
+# ISO 13485:2016 audit checklist template's confirmed current clause
+# structure. Illustrative starter content, not a substitute for a real
+# gap assessment — a new company should still have this reviewed by a
+# regulatory consultant before relying on it as their actual SOP list.
+scope_category: device_class_ii_diagnostic
+industry: device
+label: "Class II Diagnostic / Monitoring Device Manufacturer"
+description: >
+  Electronic diagnostic or patient-monitoring devices (e.g. digital
+  thermometers, blood pressure monitors, pulse oximeters) manufactured
+  and distributed under ISO 13485:2016 / QMSR, non-sterile, non-implantable.
+source_note: >
+  Modeled on a real ISO 13485:2016 certification audit report (TÜV
+  Rheinland) for a Class II digital vital-signs device manufacturer, and
+  the MSECB ISO 13485:2016 audit checklist template.
+
+checklist_items:
+  - department: qc
+    item_name: "Equipment Calibration Records"
+    citation: "ISO 13485 Clause 7.6"
+    match_phrases: ["calibration record", "calibration log"]
+    requirement_text: >
+      Monitoring and measuring equipment shall be identified, calibrated
+      against a traceable reference standard at a defined frequency, and
+      tagged with its calibration status; records of each calibration
+      shall be retained.
+  - department: qc
+    item_name: "Incoming Component Inspection Records"
+    citation: "ISO 13485 Clause 7.4.3"
+    match_phrases: ["incoming inspection", "receiving inspection"]
+    requirement_text: >
+      Incoming components and materials shall be inspected or tested
+      against defined acceptance criteria before release to production,
+      with the inspection records retained.
+  - department: qc
+    item_name: "Finished Product Release Testing Records"
+    citation: "ISO 13485 Clause 8.2.6"
+    match_phrases: ["release testing", "final inspection"]
+    requirement_text: >
+      Finished product monitoring and measurement (incoming, in-process,
+      and final inspection) shall be performed against defined acceptance
+      criteria before release, with records retained.
+
+  - department: qa
+    item_name: "Document & Record Control Procedures"
+    citation: "ISO 13485 Clause 4.2.4 / 4.2.5"
+    match_phrases: ["document control", "record control"]
+    requirement_text: >
+      Procedures shall control the creation, review, approval, and
+      revision of quality system documents, and the identification,
+      storage, retention, and disposition of quality records.
+  - department: qa
+    item_name: "Internal Audit Program & Reports"
+    citation: "ISO 13485 Clause 8.2.4"
+    match_phrases: ["internal audit", "audit schedule"]
+    requirement_text: >
+      Internal audits shall be conducted at planned intervals against an
+      audit program to determine whether the quality management system
+      conforms to requirements and is effectively maintained.
+  - department: qa
+    item_name: "CAPA Log"
+    citation: "ISO 13485 Clause 8.5.2 / 8.5.3"
+    match_phrases: ["capa log", "corrective and preventive action log"]
+    requirement_text: >
+      Corrective and preventive actions shall be logged from initiation
+      through root-cause determination, implementation, and effectiveness
+      review.
+
+  - department: utilities
+    item_name: "Infrastructure Qualification & Maintenance Plan"
+    citation: "ISO 13485 Clause 6.3"
+    match_phrases: ["infrastructure qualification", "maintenance plan"]
+    requirement_text: >
+      Infrastructure needed for product conformity (equipment, utilities,
+      supporting services) shall be identified, qualified, and maintained
+      per a documented maintenance plan.
+  - department: utilities
+    item_name: "Work Environment Control Procedure"
+    citation: "ISO 13485 Clause 6.4"
+    match_phrases: ["work environment", "environment control"]
+    requirement_text: >
+      Work environment conditions that could adversely affect product
+      quality shall be identified, controlled, and monitored.
+  - department: utilities
+    item_name: "Environmental Monitoring Log"
+    citation: "ISO 13485 Clause 6.4"
+    match_phrases: ["environmental monitoring log", "environmental monitoring"]
+    requirement_text: >
+      Environmental conditions (temperature, humidity, and similar
+      parameters) in controlled storage or production areas shall be
+      monitored and logged at a defined frequency.
+
+  - department: manufacturing
+    item_name: "Device History Record"
+    citation: "QMSR / ISO 13485 Clause 7.5.1"
+    match_phrases: ["device history record", "batch record"]
+    requirement_text: >
+      A device history record shall be maintained for each production
+      lot, demonstrating the device was manufactured in accordance with
+      the device master record.
+  - department: manufacturing
+    item_name: "Identification & Traceability Records"
+    citation: "ISO 13485 Clause 7.5.8 / 7.5.9"
+    match_phrases: ["traceability", "identification record"]
+    requirement_text: >
+      Product shall be identified by suitable means throughout production,
+      and component/lot traceability shall be maintained through to the
+      finished device.
+  - department: manufacturing
+    item_name: "Preservation of Product Records"
+    citation: "ISO 13485 Clause 7.5.11"
+    match_phrases: ["preservation of product", "storage evaluation"]
+    requirement_text: >
+      Procedures shall preserve product conformity during internal
+      processing and storage, including periodic evaluation of stored
+      material and finished goods.
+
+  - department: engineering
+    item_name: "Design History File"
+    citation: "ISO 13485 Clause 7.3.10"
+    match_phrases: ["design history file", "design and development file"]
+    requirement_text: >
+      A design history file shall be established and maintained for each
+      device type, demonstrating the design was developed in accordance
+      with the approved design plan.
+  - department: engineering
+    item_name: "Risk Management File"
+    citation: "ISO 14971 / ISO 13485 Clause 7.1"
+    match_phrases: ["risk management file", "risk management report"]
+    requirement_text: >
+      A risk management file shall demonstrate that risk management
+      activities were performed throughout the product lifecycle per
+      ISO 14971.
+  - department: engineering
+    item_name: "Process/Equipment Validation Report"
+    citation: "ISO 13485 Clause 7.5.6"
+    match_phrases: ["process validation", "equipment validation"]
+    requirement_text: >
+      Processes whose output cannot be fully verified by subsequent
+      monitoring shall be validated (IQ/OQ/PQ as applicable), with
+      validation records maintained.
+
+vendor_standards:
+  - vendor_category: raw_material_supplier
+    requirement_name: "Approved Supplier List & Evaluation Record"
+    citation: "ISO 13485 Clause 7.4.1"
+    match_phrases: ["approved supplier list", "supplier evaluation"]
+    requirement_text: >
+      The vendor shall appear on an approved supplier list supported by a
+      documented supplier evaluation appropriate to the component's effect
+      on product quality.
+  - vendor_category: raw_material_supplier
+    requirement_name: "Certificate of Conformance per Lot"
+    citation: "ISO 13485 Clause 7.4.3"
+    match_phrases: ["certificate of conformance", "certificate of analysis"]
+    requirement_text: >
+      The vendor shall issue a certificate of conformance or analysis for
+      each lot supplied, confirming conformance to the manufacturer's
+      specification.
+
+  - vendor_category: contract_manufacturer
+    requirement_name: "Quality Agreement Defining Responsibilities"
+    citation: "ISO 13485 Clause 4.1"
+    match_phrases: ["quality agreement", "roles and responsibilities"]
+    requirement_text: >
+      A quality agreement shall define roles and responsibilities between
+      the manufacturer and the contract manufacturer, including change
+      control and deviation escalation.
+  - vendor_category: contract_manufacturer
+    requirement_name: "Outsourced Process Control Records"
+    citation: "ISO 13485 Clause 7.4.1"
+    match_phrases: ["outsourced process", "control of outsourced"]
+    requirement_text: >
+      The manufacturer shall maintain records demonstrating control over
+      the outsourced process, appropriate to the risk involved and the
+      contractor's ability to meet requirements.
+
+  - vendor_category: calibration_test_service
+    requirement_name: "Traceable Calibration Certificate"
+    citation: "ISO 13485 Clause 7.6"
+    match_phrases: ["calibration certificate", "traceable"]
+    requirement_text: >
+      The service shall issue a calibration certificate traceable to a
+      national or international measurement standard for each instrument
+      calibrated.
+  - vendor_category: calibration_test_service
+    requirement_name: "Accreditation Scope Coverage"
+    citation: "ISO/IEC 17025"
+    match_phrases: ["accreditation scope", "iso/iec 17025 accredited"]
+    requirement_text: >
+      The specific measurement performed on the manufacturer's behalf
+      shall fall within the service's published ISO/IEC 17025
+      accreditation scope.
+
+  - vendor_category: sterilization_service
+    requirement_name: "Validated Sterilization Cycle Report"
+    citation: "ISO 13485 Clause 7.5.7"
+    match_phrases: ["cycle validation", "sterilization cycle"]
+    requirement_text: >
+      The service shall run each lot per a validated sterilization cycle,
+      with cycle parameters confirmed against the qualified envelope for
+      the device family.
+  - vendor_category: sterilization_service
+    requirement_name: "Biological Indicator Results"
+    citation: "ISO 11138"
+    match_phrases: ["biological indicator", "bacillus atrophaeus"]
+    requirement_text: >
+      Biological indicator results, including the spore organism and
+      population used, shall be reported for each sterilization run.
+
+  - vendor_category: packaging_component_supplier
+    requirement_name: "Packaging Material Specification Conformance"
+    citation: "ISO 13485 Clause 7.4.3"
+    match_phrases: ["material specification", "conforms to specification"]
+    requirement_text: >
+      The supplier shall demonstrate that each packaging component lot
+      conforms to the manufacturer's material specification.
+  - vendor_category: packaging_component_supplier
+    requirement_name: "Seal Integrity Test Report"
+    citation: "ISO 11607-1"
+    match_phrases: ["seal integrity", "seal strength test"]
+    requirement_text: >
+      The supplier shall provide seal integrity test results appropriate
+      to the packaging system's intended barrier performance.

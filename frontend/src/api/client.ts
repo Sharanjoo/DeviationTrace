@@ -43,6 +43,7 @@ export const api = {
     }),
   upload: <T>(path: string, formData: FormData) =>
     request<T>(path, { method: "POST", body: formData }),
+  del: <T>(path: string) => request<T>(path, { method: "DELETE" }),
   downloadBlob: async (path: string): Promise<Blob> => {
     const response = await fetch(`${API_BASE_URL}${path}`, { headers: authHeaders() });
     if (!response.ok) {

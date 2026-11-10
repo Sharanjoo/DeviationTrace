@@ -1,8 +1,11 @@
-"""Idempotent loader for the internal-audit checklist library.
+"""Idempotent loader for the global internal-audit checklist library.
 
 Reads backend/app/seed/data/checklist/*.yaml and upserts rows keyed on
 (department, item_name, version) so re-running after editing a YAML file
-updates existing rows instead of duplicating them.
+updates existing rows instead of duplicating them. Always filters to
+org_id IS NULL (the global library) so this never matches or overwrites
+an org's own custom checklist item that happens to share a department
+and item_name — see AuditChecklistItem's org_id docstring.
 
 Run with: python -m app.seed.load_checklist
 """
@@ -29,6 +32,7 @@ def load_checklist() -> None:
                 existing = (
                     db.query(AuditChecklistItem)
                     .filter(
+                        AuditChecklistItem.org_id.is_(None),
                         AuditChecklistItem.department == department,
                         AuditChecklistItem.item_name == entry["item_name"],
                         AuditChecklistItem.version == version,

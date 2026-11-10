@@ -32,3 +32,24 @@ class AuditSimulationRunResult(BaseModel):
     missing: int
     incomplete: int
     satisfied: int
+
+
+class EffectiveChecklistItemOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    department: str
+    item_name: str
+    citation: str
+    requirement_text: str
+    match_phrases: list[str]
+    is_custom: bool
+    is_excluded: bool
+
+
+class ChecklistItemCreate(BaseModel):
+    department: str
+    item_name: str
+    citation: str
+    requirement_text: str
+    match_phrases: list[str] = []

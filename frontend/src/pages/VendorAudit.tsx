@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { GlassPanel, SeverityChip } from "../components/GlassPanel";
 import { api, ApiError } from "../api/client";
+import { DEPARTMENT_LABELS, VENDOR_CATEGORIES_BY_DEPARTMENT, VENDOR_CATEGORY_LABELS } from "../departmentVendorMap";
 
 interface VendorDocumentOut {
   id: string;
@@ -19,17 +21,13 @@ interface VendorAuditFindingOut {
   explanation: string;
 }
 
-const VENDOR_CATEGORIES = [
-  { value: "raw_material_supplier", label: "Raw material supplier" },
-  { value: "contract_manufacturer", label: "Contract manufacturer" },
-  { value: "calibration_test_service", label: "Calibration / test service" },
-  { value: "sterilization_service", label: "Sterilization service" },
-  { value: "packaging_component_supplier", label: "Packaging component supplier" },
-];
-
 const STATUSES = ["missing", "partial", "satisfied"];
 
 export function VendorAudit() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const departmentFilter = searchParams.get("department");
+  const categoriesForDepartment = departmentFilter ? VENDOR_CATEGORIES_BY_DEPARTMENT[departmentFilter] ?? [] : null;
+
   const [documents, setDocuments] = useState<VendorDocumentOut[]>([]);
   const [findings, setFindings] = useState<VendorAuditFindingOut[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -79,11 +77,17 @@ export function VendorAudit() {
   }, [findings, statusFilter]);
 
   const visibleDocuments = useMemo(
-    () => documents.filter((d) => !vendorCategoryFilter || d.vendor_category === vendorCategoryFilter),
-    [documents, vendorCategoryFilter],
+    () =>
+      documents.filter((d) => {
+        if (categoriesForDepartment && !(d.vendor_category && categoriesForDepartment.includes(d.vendor_category))) {
+          return false;
+        }
+        return !vendorCategoryFilter || d.vendor_category === vendorCategoryFilter;
+      }),
+    [documents, vendorCategoryFilter, categoriesForDepartment],
   );
 
-  const categoryLabel = (value: string | null) => VENDOR_CATEGORIES.find((c) => c.value === value)?.label ?? value ?? "—";
+  const categoryLabel = (value: string | null) => (value ? VENDOR_CATEGORY_LABELS[value] ?? value : "—");
 
   const summarize = (rows: VendorAuditFindingOut[]) => {
     const counts = { missing: 0, partial: 0, satisfied: 0 };
@@ -97,6 +101,22 @@ export function VendorAudit() {
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
       <h1 className="text-2xl font-semibold">Vendor audit cross-check</h1>
 
+      {departmentFilter && (
+        <GlassPanel className="flex items-center justify-between gap-4">
+          <p className="text-sm">
+            Showing vendor categories owned by <strong>{DEPARTMENT_LABELS[departmentFilter] ?? departmentFilter}</strong>.
+          </p>
+          <button
+            type="button"
+            onClick={() => setSearchParams({})}
+            className="text-xs underline"
+            style={{ color: "var(--text-muted)" }}
+          >
+            Show all departments
+          </button>
+        </GlassPanel>
+      )}
+
       <div className="flex gap-4 text-sm">
         <select
           className="rounded-lg border px-3 py-2"
@@ -105,9 +125,9 @@ export function VendorAudit() {
           onChange={(e) => setVendorCategoryFilter(e.target.value)}
         >
           <option value="">All vendor categories</option>
-          {VENDOR_CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.label}
+          {(categoriesForDepartment ?? Object.keys(VENDOR_CATEGORY_LABELS)).map((value) => (
+            <option key={value} value={value}>
+              {VENDOR_CATEGORY_LABELS[value]}
             </option>
           ))}
         </select>

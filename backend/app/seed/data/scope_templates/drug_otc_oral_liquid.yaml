@@ -1,0 +1,223 @@
+# Onboarding skeleton — OTC Oral-Liquid Drug Manufacturer.
+# Modeled on a real 2025 FDA warning letter against a comparable OTC
+# oral-liquid manufacturer, itemizing concrete required SOPs/procedures/
+# records under 21 CFR 210/211. Illustrative starter content, not a
+# substitute for a real gap assessment — a new company should still have
+# this reviewed by a regulatory consultant before relying on it as their
+# actual SOP list.
+scope_category: drug_otc_oral_liquid
+industry: drug
+label: "OTC Oral-Liquid Drug Manufacturer"
+description: >
+  Over-the-counter oral liquid drug products (e.g. syrups, solutions)
+  manufactured under 21 CFR 210/211 CGMP, non-sterile.
+source_note: >
+  Modeled on a real 2025 FDA warning letter against a comparable OTC
+  oral-liquid manufacturer, citing 21 CFR 211.22(d), 211.84(d)(1),
+  211.100(a), 211.165(a), 211.194(a), and 211.34.
+
+checklist_items:
+  - department: qc
+    item_name: "Finished Product Release Testing Records"
+    citation: "21 CFR 211.165(a) / 211.194(a)"
+    match_phrases: ["release testing", "strength testing"]
+    requirement_text: >
+      Each batch shall be tested for strength and conformance to
+      specification before release, with complete laboratory records of
+      all tests retained.
+  - department: qc
+    item_name: "Component Identity Testing & Specifications"
+    citation: "21 CFR 211.84(d)(1)"
+    match_phrases: ["identity test", "component specification"]
+    requirement_text: >
+      At least one identity test shall be performed on each incoming
+      component lot, against written chemical and microbiological
+      specifications, before use in manufacturing.
+  - department: qc
+    item_name: "Supplier COA Reliance Validation Records"
+    citation: "21 CFR 211.84(d)(1)"
+    match_phrases: ["coa reliance", "certificate of analysis validation"]
+    requirement_text: >
+      Where a supplier's certificate of analysis is relied on in place of
+      full testing, the reliability of that supplier's results shall be
+      established initially and re-validated periodically.
+
+  - department: qa
+    item_name: "Batch Record Review & Release Procedure"
+    citation: "21 CFR 211.22(d)"
+    match_phrases: ["batch record review", "release for distribution"]
+    requirement_text: >
+      A written procedure shall require quality unit review of the
+      complete batch record, including all test results, before a batch
+      is released for distribution.
+  - department: qa
+    item_name: "Quality Unit Responsibilities & Procedures"
+    citation: "21 CFR 211.22(d)"
+    match_phrases: ["quality unit responsibilities", "quality unit procedures"]
+    requirement_text: >
+      The quality unit's responsibilities and procedures shall be defined
+      in writing, fully followed, and shall include oversight and approval
+      of investigations.
+  - department: qa
+    item_name: "CAPA Tracking Log"
+    citation: "21 CFR 211.192"
+    match_phrases: ["capa tracking", "corrective and preventive action"]
+    requirement_text: >
+      Corrective and preventive actions shall be tracked with a defined
+      timeframe, current status, and an effectiveness evaluation for each
+      action.
+  - department: qa
+    item_name: "Six-System CGMP Audit Report"
+    citation: "21 CFR 211.34"
+    match_phrases: ["six-system audit", "cgmp audit"]
+    requirement_text: >
+      A comprehensive audit of the quality, facilities/equipment,
+      materials, production, packaging/labeling, and laboratory control
+      systems shall be performed, prepared by a qualified consultant where
+      applicable.
+
+  - department: utilities
+    item_name: "Equipment & Facility Qualification Program"
+    citation: "21 CFR 211.100(a)"
+    match_phrases: ["equipment qualification", "facility qualification"]
+    requirement_text: >
+      Equipment and facilities used in production shall be qualified, with
+      qualification records demonstrating they are suitable for their
+      intended use.
+  - department: utilities
+    item_name: "Purified Water System Validation Report"
+    citation: "21 CFR 211.100(a)"
+    match_phrases: ["purified water validation", "water system validation"]
+    requirement_text: >
+      The purified water system shall be validated across installation,
+      operational, and performance qualification phases, with ongoing
+      monitoring against USP limits.
+
+  - department: manufacturing
+    item_name: "Process Design, Validation & Monitoring Program"
+    citation: "21 CFR 211.100(a)"
+    match_phrases: ["process validation", "process monitoring"]
+    requirement_text: >
+      Each manufacturing process shall be designed, validated, and
+      monitored, with validation records defining critical steps and
+      identifying component lots and equipment used.
+  - department: manufacturing
+    item_name: "Process Performance Qualification Report & Risk Assessment"
+    citation: "21 CFR 211.100(a)"
+    match_phrases: ["process performance qualification", "ppq risk assessment"]
+    requirement_text: >
+      A process performance qualification shall be completed for each
+      marketed product on a defined timeline, with a documented risk
+      assessment for any product distributed before validation completion.
+  - department: manufacturing
+    item_name: "Change Management Procedure"
+    citation: "21 CFR 211.100(a)"
+    match_phrases: ["change management", "change control"]
+    requirement_text: >
+      Changes to production processes or controls shall be justified,
+      reviewed, and approved by the quality unit, with a defined method
+      for determining change effectiveness.
+
+  - department: engineering
+    item_name: "Equipment Qualification (IQ/OQ/PQ) Records"
+    citation: "21 CFR 211.100(a)"
+    match_phrases: ["iq/oq/pq", "installation operational performance qualification"]
+    requirement_text: >
+      Production equipment shall be qualified through installation,
+      operational, and performance qualification, with records
+      demonstrating it consistently performs as intended.
+  - department: engineering
+    item_name: "Facility Qualification Documentation"
+    citation: "21 CFR 211.100(a)"
+    match_phrases: ["facility qualification", "qualification records"]
+    requirement_text: >
+      Facilities and supporting systems shall be qualified for their
+      intended manufacturing use, with qualification records maintained.
+  - department: engineering
+    item_name: "Analytical Method Validation Report"
+    citation: "21 CFR 211.165(e)"
+    match_phrases: ["analytical method validation", "method validation"]
+    requirement_text: >
+      Test methods used to determine conformance to specifications shall
+      be validated for accuracy, sensitivity, specificity, and
+      reproducibility.
+
+vendor_standards:
+  - vendor_category: raw_material_supplier
+    requirement_name: "Component Identity Testing & Specifications"
+    citation: "21 CFR 211.84(d)(1)"
+    match_phrases: ["identity testing", "component specification"]
+    requirement_text: >
+      The vendor's own records shall demonstrate identity testing and
+      conformance to specification for each component lot supplied.
+  - vendor_category: raw_material_supplier
+    requirement_name: "Supplier COA Reliance Validation"
+    citation: "21 CFR 211.84(d)(1)"
+    match_phrases: ["coa reliance", "supplier validation"]
+    requirement_text: >
+      The vendor's certificate of analysis program shall have been
+      validated and periodically re-validated before being relied upon in
+      place of full incoming testing.
+
+  - vendor_category: contract_manufacturer
+    requirement_name: "Quality Agreement & Batch Disposition Authority"
+    citation: "21 CFR 211.22(d)"
+    match_phrases: ["quality agreement", "batch disposition"]
+    requirement_text: >
+      A quality agreement shall define which party holds batch disposition
+      authority, and the contract manufacturer's quality unit responsibilities.
+  - vendor_category: contract_manufacturer
+    requirement_name: "Contract Facility Qualification & Oversight"
+    citation: "21 CFR 211.34"
+    match_phrases: ["contract facility qualification", "six-system audit"]
+    requirement_text: >
+      The contract manufacturer's facility and quality system shall be
+      qualified and periodically audited, consistent with a six-system
+      CGMP audit approach.
+
+  - vendor_category: calibration_test_service
+    requirement_name: "Contract Lab Qualification & Oversight Program"
+    citation: "21 CFR 211.34"
+    match_phrases: ["contract laboratory", "lab qualification"]
+    requirement_text: >
+      Contract laboratories testing the manufacturer's products shall be
+      qualified and overseen under a documented program.
+  - vendor_category: calibration_test_service
+    requirement_name: "Calibration Certificate Traceability"
+    citation: "21 CFR 211.160"
+    match_phrases: ["calibration certificate", "traceable"]
+    requirement_text: >
+      Calibration certificates issued by the service shall be traceable to
+      a national or international measurement standard.
+
+  - vendor_category: sterilization_service
+    requirement_name: "Validated Sterilization Cycle Report"
+    citation: "ISO 11135"
+    match_phrases: ["cycle validation", "sterilization cycle"]
+    requirement_text: >
+      Where sterilization is outsourced, the service shall run each lot
+      per a validated cycle confirming exposure parameters meet the
+      qualified envelope.
+  - vendor_category: sterilization_service
+    requirement_name: "Bioburden / Dose Audit Report"
+    citation: "ISO 11137"
+    match_phrases: ["dose audit", "bioburden"]
+    requirement_text: >
+      The service shall provide pre-sterilization bioburden testing and
+      periodic dose audit re-verification documentation.
+
+  - vendor_category: packaging_component_supplier
+    requirement_name: "Component Specification Conformance"
+    citation: "21 CFR 211.84"
+    match_phrases: ["component specification", "conforms to specification"]
+    requirement_text: >
+      The supplier shall demonstrate each packaging component lot
+      conforms to the manufacturer's material specification.
+  - vendor_category: packaging_component_supplier
+    requirement_name: "Container Closure Integrity Test Report"
+    citation: "21 CFR 211.94"
+    match_phrases: ["container closure integrity", "closure integrity test"]
+    requirement_text: >
+      The supplier shall provide container closure integrity test results
+      appropriate to the product's intended shelf life and route of
+      administration.

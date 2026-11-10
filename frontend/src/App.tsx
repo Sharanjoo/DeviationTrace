@@ -6,6 +6,8 @@ import { AuditSimulation } from "./pages/AuditSimulation";
 import { Dashboard } from "./pages/Dashboard";
 import { FindingDetail } from "./pages/FindingDetail";
 import { Login } from "./pages/Login";
+import { Onboarding } from "./pages/Onboarding";
+import { OrgChecklist } from "./pages/OrgChecklist";
 import { Processing } from "./pages/Processing";
 import { ReportExport } from "./pages/ReportExport";
 import { Review } from "./pages/Review";
@@ -13,10 +15,12 @@ import { Upload } from "./pages/Upload";
 import { VendorAudit } from "./pages/VendorAudit";
 
 const NAV_LINKS = [
+  { to: "/onboarding", label: "New Company" },
   { to: "/", label: "Upload" },
   { to: "/findings", label: "Findings" },
   { to: "/review", label: "Review" },
   { to: "/report", label: "Report" },
+  { to: "/org-checklist", label: "Checklist" },
   { to: "/audit-simulation", label: "Audit" },
   { to: "/vendor-audit", label: "Vendor Audit" },
 ];
@@ -47,6 +51,14 @@ function AppShell() {
       </header>
       <main className="px-4 pb-16">
         <Routes>
+          <Route
+            path="/onboarding"
+            element={
+              <RequireAuth>
+                <Onboarding />
+              </RequireAuth>
+            }
+          />
           <Route
             path="/"
             element={
@@ -92,6 +104,14 @@ function AppShell() {
             element={
               <RequireAuth>
                 <ReportExport />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/org-checklist"
+            element={
+              <RequireAuth>
+                <OrgChecklist />
               </RequireAuth>
             }
           />
