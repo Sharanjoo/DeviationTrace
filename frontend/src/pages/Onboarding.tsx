@@ -92,7 +92,7 @@ export function Onboarding() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <h1 className="text-2xl font-semibold">New company skeleton</h1>
+      <h1 className="text-3xl font-bold">New company skeleton</h1>
       <p style={{ color: "var(--text-muted)" }}>
         Tell us what you make and we'll show you the SOPs, reports, and records a comparable real manufacturer
         needed — modeled on a real audit or FDA warning letter, with citations, not generic boilerplate.
@@ -145,8 +145,7 @@ export function Onboarding() {
               type="button"
               onClick={handleAdopt}
               disabled={adopting}
-              className="shrink-0 rounded-lg border px-4 py-2 text-sm font-medium"
-              style={{ borderColor: "var(--glass-border)", background: "var(--surface-bg)", color: "var(--surface-text)" }}
+              className="shrink-0 btn-primary px-4 py-2 text-sm"
             >
               {adopting ? "Adopting..." : "Adopt this as my checklist"}
             </button>

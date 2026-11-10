@@ -69,7 +69,7 @@ export function Processing() {
 
   return (
     <GlassPanel className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-semibold">Processing</h1>
+      <h1 className="text-3xl font-bold">Processing</h1>
       <p className="mt-2" style={{ color: "var(--text-muted)" }}>
         Status: {status?.status ?? "starting..."}
       </p>
@@ -99,8 +99,7 @@ export function Processing() {
       {isDone && (
         <button
           type="button"
-          className="mt-6 rounded-lg border px-4 py-2 font-medium"
-          style={{ borderColor: "var(--glass-border)" }}
+          className="mt-6 btn-primary px-4 py-2"
           onClick={() => navigate(`/findings?document_id=${documentId}`)}
         >
           View findings

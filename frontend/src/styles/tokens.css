@@ -1,46 +1,52 @@
-/* Glassmorphism design tokens, per the DeviationTrace PRD's UI/UX table.
-   Cards read tokens here; only the fixed Background layer applies blur,
-   per the PRD's performance note against stacking backdrop-filter layers. */
+/* Design tokens. Light, airy product style: soft blue-to-lavender page
+   wash, white cards with hairline borders and soft shadows, and a
+   blue-to-violet gradient reserved for primary actions and accents.
+   The token names are kept from the earlier glass theme (GlassPanel and
+   ~35 inline styles read --glass-border etc.), so pages restyle without
+   per-page edits. Light-only on purpose: the look depends on the bright
+   wash, so it no longer flips with the OS dark-mode preference. */
 
 :root {
-  --glass-panel-bg: rgba(255, 255, 255, 0.55);
-  --glass-border: rgba(255, 255, 255, 0.4);
-  --glass-blur: 16px;
-  --glass-radius: 18px;
-  --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.1);
+  color-scheme: light;
 
-  --gradient-start: #dbeafe;
-  --gradient-end: #ffffff;
+  /* Brand gradient */
+  --brand-blue: #3b82f6;
+  --brand-violet: #8b5cf6;
+  --brand-gradient: linear-gradient(90deg, var(--brand-blue) 0%, var(--brand-violet) 100%);
+  --brand-blue-text: #2563eb;
 
-  --text: #0f172a;
-  --text-muted: #475569;
+  /* Page wash (Background component) */
+  --gradient-start: #eff6ff;
+  --gradient-mid: #ffffff;
+  --gradient-end: #f4f3ff;
 
-  /* Solid (non-translucent) surface for form controls. Native <select>
-     option lists ignore the glass panel's translucency and fall back to an
-     opaque background, so these must be explicit and theme-aware or dark
-     mode renders light text on a white dropdown. */
+  /* Cards */
+  --glass-panel-bg: #ffffff;
+  --glass-border: #e5e7eb;
+  --glass-blur: 0px;
+  --glass-radius: 16px;
+  --glass-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+
+  /* Text */
+  --text: #111827;
+  --text-muted: #6b7280;
+
+  /* Form controls */
   --surface-bg: #ffffff;
-  --surface-text: #0f172a;
+  --surface-text: #111827;
+  --focus-ring: rgba(59, 130, 246, 0.35);
 
-  --severity-critical: #ef6461;
-  --severity-major: #f5a524;
-  --severity-minor: #f2e394;
-  --severity-resolved: #7fd8a4;
-}
+  /* Tinted chip backgrounds (icon chips, eyebrow pills) */
+  --tint-blue: #eff6ff;
+  --tint-violet: #f5f3ff;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --glass-panel-bg: rgba(255, 255, 255, 0.12);
-    --glass-border: rgba(255, 255, 255, 0.2);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-
-    --gradient-start: #0b1524;
-    --gradient-end: #1d3a3a;
-
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-
-    --surface-bg: #1e293b;
-    --surface-text: #f1f5f9;
-  }
+  /* Severity: solid color for text/accents, tint for chip backgrounds */
+  --severity-critical: #dc2626;
+  --severity-major: #d97706;
+  --severity-minor: #a16207;
+  --severity-resolved: #059669;
+  --severity-critical-tint: #fef2f2;
+  --severity-major-tint: #fffbeb;
+  --severity-minor-tint: #fefce8;
+  --severity-resolved-tint: #ecfdf5;
 }

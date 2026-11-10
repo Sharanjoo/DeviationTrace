@@ -108,7 +108,7 @@ export function OrgChecklist() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Your department checklist</h1>
+      <h1 className="text-3xl font-bold">Your department checklist</h1>
       <p style={{ color: "var(--text-muted)" }}>
         This is the checklist Internal Audit Simulation actually runs against for your org. Turn off items that
         don't apply to your site, and add your own — department by department.
@@ -186,8 +186,7 @@ export function OrgChecklist() {
                   type="button"
                   disabled={submitting}
                   onClick={() => submitCustomItem(department)}
-                  className="self-start rounded-lg border px-4 py-2 text-sm font-medium"
-                  style={{ borderColor: "var(--glass-border)", background: "var(--surface-bg)", color: "var(--surface-text)" }}
+                  className="self-start btn-primary px-4 py-2 text-sm"
                 >
                   {submitting ? "Adding..." : "Add to checklist"}
                 </button>

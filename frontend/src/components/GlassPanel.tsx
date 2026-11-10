@@ -1,8 +1,8 @@
 import type { PropsWithChildren } from "react";
 import { TRIAGE_LABELS, type TriageDecisionValue } from "../triage";
 
-/** Solid-translucent card sitting on top of the blurred Background — no
- * backdrop-filter of its own, per the PRD's stacking-blur performance note. */
+/** White card with a hairline border and soft shadow, sitting on the page
+ * wash. Name kept from the earlier glass theme so every page restyles. */
 export function GlassPanel({
   children,
   className = "",
@@ -32,9 +32,10 @@ const SEVERITY_LABELS = {
 export function SeverityChip({ severity }: { severity: keyof typeof SEVERITY_LABELS }) {
   return (
     <span
-      className="rounded-full px-3 py-1 text-xs font-medium text-slate-900"
-      style={{ background: `var(--severity-${severity})` }}
+      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
+      style={{ background: `var(--severity-${severity}-tint)`, color: `var(--severity-${severity})` }}
     >
+      <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ background: `var(--severity-${severity})` }} />
       {SEVERITY_LABELS[severity]}
     </span>
   );

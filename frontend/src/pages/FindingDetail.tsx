@@ -101,7 +101,7 @@ function FindingView({ id }: { id: string }) {
 
       <div className="mt-3 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">
+          <h1 className="text-3xl font-bold">
             {finding.clause.regulation.toUpperCase()} {finding.clause.clause_number}
           </h1>
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -163,8 +163,7 @@ function FindingView({ id }: { id: string }) {
         <div className="mt-4 flex items-center gap-3">
           <button
             type="button"
-            className="rounded-lg border px-4 py-2 text-sm font-medium"
-            style={{ borderColor: "var(--glass-border)", background: "var(--surface-bg)", color: "var(--surface-text)" }}
+            className="btn-primary px-4 py-2 text-sm"
             onClick={goToNextPending}
           >
             Next pending finding &rarr;

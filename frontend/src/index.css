@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @import "./styles/tokens.css";
 
@@ -15,14 +15,24 @@ body,
 body {
   margin: 0;
   color: var(--text);
-  font-family: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+  background: #ffffff;
+  font-family: "Atkinson Hyperlegible Next", system-ui, "Segoe UI", Roboto, sans-serif;
   font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Form controls need an explicit, opaque background + text color: they
-   don't pick up the glass panel's translucency, and without this they fall
-   back to the browser's default (usually white), which becomes invisible
-   light-on-white once dark mode's --text turns light. */
+h1,
+h2,
+h3 {
+  color: var(--text);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+/* Form controls: opaque white surface, hairline border, soft blue focus
+   ring. Pages already set rounded-lg/border/padding via utility classes and
+   borderColor via var(--glass-border); this supplies the rest. */
 input,
 select,
 textarea,
@@ -31,7 +41,65 @@ option {
   color: var(--surface-text);
 }
 
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+select,
+textarea {
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--brand-blue) !important;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
 input::placeholder,
 textarea::placeholder {
-  color: var(--text-muted);
+  color: #9ca3af;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 2px;
+}
+
+@layer components {
+  /* Primary action: blue-to-violet gradient, white text, soft lift. */
+  .btn-primary {
+    border: 0;
+    border-radius: 0.5rem;
+    background-image: var(--brand-gradient);
+    color: #ffffff;
+    font-weight: 500;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+    transition: box-shadow 150ms ease, transform 150ms ease, opacity 150ms ease;
+  }
+  .btn-primary:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+    transform: translateY(-1px);
+  }
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Text with the brand gradient (stats, accents). */
+  .text-gradient {
+    background-image: var(--brand-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Small uppercase tracked label above a heading. */
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brand-blue-text);
+  }
 }

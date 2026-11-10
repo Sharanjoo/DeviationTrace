@@ -100,13 +100,12 @@ export function AuditSimulation() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
       <div className="flex items-end justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Internal audit simulation</h1>
+        <h1 className="text-3xl font-bold">Internal audit simulation</h1>
         <button
           type="button"
           onClick={handleRun}
           disabled={running}
-          className="rounded-lg border px-4 py-2 text-sm font-medium"
-          style={{ borderColor: "var(--glass-border)", background: "var(--surface-bg)", color: "var(--surface-text)" }}
+          className="btn-primary px-4 py-2 text-sm"
         >
           {running ? "Running..." : "Run simulation"}
         </button>

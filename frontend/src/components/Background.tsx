@@ -1,15 +1,13 @@
-/** The single blurred layer behind every glass panel. Blurring once here
- * (instead of giving each GlassPanel its own backdrop-filter) avoids the
- * performance cost of stacking many blurred layers, per the PRD's UI note. */
+/** Fixed page wash behind every card: a soft blue-to-white-to-lavender
+ * diagonal gradient. No blur needed now that cards are opaque white. */
 export function Background() {
   return (
     <div
       aria-hidden
       className="fixed inset-0 -z-10"
       style={{
-        background: "linear-gradient(160deg, var(--gradient-start), var(--gradient-end))",
-        filter: `blur(${"var(--glass-blur)"})`,
-        transform: "scale(1.1)",
+        background:
+          "linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-mid) 50%, var(--gradient-end) 100%)",
       }}
     />
   );

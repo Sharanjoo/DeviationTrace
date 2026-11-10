@@ -58,7 +58,7 @@ export function ReportExport() {
 
   return (
     <GlassPanel className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-semibold">Report export</h1>
+      <h1 className="text-3xl font-bold">Report export</h1>
       <p className="mt-2" style={{ color: "var(--text-muted)" }}>
         Summary across all processed documents for this organization.
       </p>
@@ -92,8 +92,7 @@ export function ReportExport() {
         type="button"
         disabled={downloading}
         onClick={handleDownload}
-        className="mt-6 rounded-lg border px-4 py-2 font-medium"
-        style={{ borderColor: "var(--glass-border)" }}
+        className="mt-6 btn-primary px-4 py-2"
       >
         {downloading ? "Preparing PDF..." : "Download PDF report"}
       </button>

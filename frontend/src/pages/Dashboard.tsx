@@ -59,7 +59,7 @@ export function Dashboard() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Findings</h1>
+      <h1 className="text-3xl font-bold">Findings</h1>
 
       <div className="flex gap-4 text-sm">
         <select

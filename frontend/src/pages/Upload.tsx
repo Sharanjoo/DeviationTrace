@@ -97,7 +97,7 @@ export function Upload() {
 
   return (
     <GlassPanel className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-semibold">Upload a document</h1>
+      <h1 className="text-3xl font-bold">Upload a document</h1>
       <p className="mt-2" style={{ color: "var(--text-muted)" }}>
         Upload a SOP, deviation report, or batch/device record (PDF, Word, or
         text). Document type and process area are recorded now; the pipeline
@@ -194,8 +194,7 @@ export function Upload() {
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-lg border px-4 py-2 font-medium"
-          style={{ borderColor: "var(--glass-border)" }}
+          className="btn-primary px-4 py-2"
         >
           {submitting ? "Uploading..." : "Upload and process"}
         </button>

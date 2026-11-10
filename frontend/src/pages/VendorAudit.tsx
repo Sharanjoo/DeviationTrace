@@ -99,7 +99,7 @@ export function VendorAudit() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Vendor audit cross-check</h1>
+      <h1 className="text-3xl font-bold">Vendor audit cross-check</h1>
 
       {departmentFilter && (
         <GlassPanel className="flex items-center justify-between gap-4">
@@ -176,8 +176,7 @@ export function VendorAudit() {
                   type="button"
                   onClick={() => handleRun(document.id)}
                   disabled={runningId === document.id}
-                  className="rounded-lg border px-3 py-1 text-xs font-medium"
-                  style={{ borderColor: "var(--glass-border)", background: "var(--surface-bg)", color: "var(--surface-text)" }}
+                  className="btn-primary px-3 py-1 text-xs"
                 >
                   {runningId === document.id ? "Running..." : "Run cross-check"}
                 </button>
