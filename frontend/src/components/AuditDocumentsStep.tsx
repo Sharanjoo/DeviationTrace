@@ -33,6 +33,7 @@ interface DocumentOut {
   processing_error: string | null;
   uploaded_at: string;
   documentation_issue_count: number | null;
+  documentation_scanned: boolean;
 }
 
 interface UploadState {
@@ -362,6 +363,11 @@ function DepartmentUploadCard({
                       </span>
                     )}
                   </span>
+                  {doc.documentation_scanned && (
+                    <span className="block text-xs" style={{ color: "var(--severity-major)" }}>
+                      Scanned: check signatures and stamps by hand
+                    </span>
+                  )}
                   {!!doc.documentation_issue_count && (
                     <span className="block text-xs" style={{ color: "var(--severity-major)" }}>
                       {doc.documentation_issue_count} blank signature/date/field

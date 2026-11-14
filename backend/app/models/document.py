@@ -34,7 +34,13 @@ class Document(Base):
     )
 
     @property
+    def documentation_scanned(self) -> bool:
+        """A scan: no text layer, so it needs a manual check instead."""
+        return any(i.kind == "scanned" for i in self.documentation_issues)
+
+    @property
     def documentation_issue_count(self) -> int | None:
+        """Blanks found (a scan's "check by hand" note isn't counted)."""
         if self.documentation_checked_at is None:
             return None
-        return len(self.documentation_issues)
+        return sum(1 for i in self.documentation_issues if i.kind != "scanned")

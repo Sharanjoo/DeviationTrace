@@ -39,6 +39,8 @@ class DocumentOut(BaseModel):
     uploaded_at: datetime
     # Blank signatures/dates/entries found; None until the document is checked.
     documentation_issue_count: int | None = None
+    # A scanned document can't be read, so it needs a manual check.
+    documentation_scanned: bool = False
 
 
 class DocumentDetailOut(DocumentOut):

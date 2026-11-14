@@ -13,6 +13,13 @@ from fpdf import FPDF
 
 from app.core.documentation.completeness import check_documentation
 from app.main import app
+from app.seed.documentation_demo_documents import (
+    CAPA_REVIEW,
+    DHR,
+    DOCUMENTATION_DEMO_DOCUMENTS,
+    SCANNED_ECO,
+    build_all,
+)
 
 client = TestClient(app)
 
@@ -127,8 +134,27 @@ def test_complete_record_has_no_issues(tmp_path):
 
 def test_demo_documents_raise_no_false_alarms():
     demo = Path(__file__).resolve().parents[2] / "demo_documents"
+    planted = {name for name, _ in DOCUMENTATION_DEMO_DOCUMENTS}  # gaps on purpose
     for path in demo.glob("*.docx"):
-        assert check_documentation(str(path)) == [], path.name
+        if path.name not in planted:
+            assert check_documentation(str(path)) == [], path.name
+
+
+def test_documentation_demo_documents_flag_exactly_the_planted_gaps(tmp_path):
+    for path in build_all(tmp_path):
+        found = _kinds(check_documentation(str(path)))
+        expected = {
+            DHR: [
+                ("missing_date", "QA approval - Date"),
+                ("missing_signature", "QA approval - Signature"),
+                ("missing_signature", "Reviewed by (Production) - Signature"),
+                ("missing_stamp", "QA release stamp"),
+                ("placeholder", "[Insert disposition]"),
+            ],
+            CAPA_REVIEW: [("missing_date", "Date"), ("missing_signature", "Approved by")],
+            SCANNED_ECO: [("scanned", "Scanned document")],
+        }[path.name]
+        assert found == expected, path.name
 
 
 # ------------------------------------------------------------- in the app
@@ -178,6 +204,27 @@ def test_processing_records_issues_and_runs_freeze_them():
     assert all(i["document_title"] == "CAL_unsigned.txt" for i in run["documentation_issues"])
     pdf = client.get(f"/audit-simulation/runs/{run['id']}/report", headers=headers)
     assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF")
+
+
+def test_scanned_upload_is_reported_as_scanned_not_as_blanks(tmp_path):
+    headers = _headers()
+    image = tmp_path / "scan.png"
+    image.write_bytes(PNG)
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.image(str(image), x=10, y=10, w=180)
+    path = tmp_path / "scan.pdf"
+    pdf.output(str(path))
+    doc = client.post(
+        "/documents",
+        headers=headers,
+        data={"type": "report", "process_area": "general", "department": "qa"},
+        files={"file": ("scan.pdf", path.read_bytes(), "application/pdf")},
+    ).json()
+    client.post(f"/documents/{doc['id']}/process", headers=headers)
+    listed = next(d for d in client.get("/documents", headers=headers).json() if d["id"] == doc["id"])
+    assert listed["documentation_scanned"] is True
+    assert listed["documentation_issue_count"] == 0
 
 
 def test_vendor_audit_shows_report_issues():
