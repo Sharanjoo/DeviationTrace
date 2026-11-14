@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -37,3 +39,15 @@ class ScopeTemplateDetailOut(BaseModel):
 class AdoptResult(BaseModel):
     added: int
     skipped: int
+
+
+class OnboardingStatusOut(BaseModel):
+    """What the app needs to decide whether to show onboarding, and the
+    company profile it remembers once onboarding is done."""
+
+    completed: bool
+    onboarded_at: datetime | None
+    org_name: str
+    industry: str
+    scope_category: str | None
+    scope_label: str | None

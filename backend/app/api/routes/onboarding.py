@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -6,7 +8,13 @@ from app.core.onboarding.scope_templates import SCOPE_TEMPLATES
 from app.core.security import CurrentOrg, get_current_org
 from app.database import get_db
 from app.models.audit_checklist_item import AuditChecklistItem
-from app.schemas.onboarding import AdoptResult, ScopeTemplateDetailOut, ScopeTemplateSummaryOut
+from app.models.organization import Organization
+from app.schemas.onboarding import (
+    AdoptResult,
+    OnboardingStatusOut,
+    ScopeTemplateDetailOut,
+    ScopeTemplateSummaryOut,
+)
 
 router = APIRouter(prefix="/onboarding", tags=["onboarding"])
 
@@ -100,5 +108,50 @@ def adopt_scope_template(
         )
         added += 1
 
+    _mark_onboarded(db, current, scope_category=template.scope_category)
     db.commit()
     return AdoptResult(added=added, skipped=len(template.checklist_items) - added)
+
+
+def _mark_onboarded(db: Session, current: CurrentOrg, scope_category: str | None) -> Organization:
+    """Record onboarding as done. The first completion time is kept, and the
+    scope is only overwritten when a template was actually chosen."""
+    org = db.get(Organization, current.org_id)
+    if org.onboarded_at is None:
+        org.onboarded_at = datetime.now(timezone.utc)
+    if scope_category is not None:
+        org.scope_category = scope_category
+    return org
+
+
+def _status(org: Organization) -> OnboardingStatusOut:
+    template = SCOPE_TEMPLATES.get(org.scope_category) if org.scope_category else None
+    return OnboardingStatusOut(
+        completed=org.onboarded_at is not None,
+        onboarded_at=org.onboarded_at,
+        org_name=org.name,
+        industry=org.industry,
+        scope_category=org.scope_category,
+        scope_label=template.label if template else None,
+    )
+
+
+@router.get("/status", response_model=OnboardingStatusOut)
+def get_onboarding_status(
+    current: CurrentOrg = Depends(get_current_org),
+    db: Session = Depends(get_db),
+) -> OnboardingStatusOut:
+    return _status(db.get(Organization, current.org_id))
+
+
+@router.post("/complete", response_model=OnboardingStatusOut)
+def complete_onboarding_with_standard_checklist(
+    current: CurrentOrg = Depends(get_current_org),
+    db: Session = Depends(get_db),
+) -> OnboardingStatusOut:
+    """Finish onboarding without adopting a template: the org keeps the
+    standard (global) checklist only."""
+    org = _mark_onboarded(db, current, scope_category=None)
+    db.commit()
+    db.refresh(org)
+    return _status(org)

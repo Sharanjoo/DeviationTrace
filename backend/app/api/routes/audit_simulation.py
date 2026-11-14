@@ -1,20 +1,25 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import case, or_
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from sqlalchemy import case, func, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.api.routes.documents import VALID_DEPARTMENTS
 from app.core.audit_simulation.rule_based import RuleBasedAuditSimulationEngine
+from app.core.reporting import generate_audit_run_pdf
 from app.core.security import CurrentOrg, get_current_org
 from app.database import get_db
 from app.models.audit_checklist_finding import AuditChecklistFinding
 from app.models.audit_checklist_item import AuditChecklistItem
+from app.models.audit_simulation_run import AuditSimulationRun, AuditSimulationRunItem
 from app.models.document import Document
 from app.models.org_checklist_exclusion import OrgChecklistExclusion
+from app.models.organization import Organization
 from app.schemas.audit_simulation import (
     AuditChecklistFindingOut,
+    AuditSimulationRunDetailOut,
     AuditSimulationRunResult,
+    AuditSimulationRunSummaryOut,
     ChecklistItemCreate,
     EffectiveChecklistItemOut,
 )
@@ -47,6 +52,11 @@ def run_audit_simulation(
     it hasn't excluded, plus its own custom items) against its current
     documents, and upsert in place (never delete-and-recreate — same lesson
     as the document reprocess FK bug in the base system's matching engine)."""
+    # Lock the org row so two simultaneous runs (double-click, retry) are
+    # serialized: they'd otherwise race on both the finding upserts and the
+    # next run_number.
+    db.query(Organization).filter(Organization.id == current.org_id).with_for_update().one()
+
     documents = (
         db.query(Document)
         .filter(Document.org_id == current.org_id, Document.department.isnot(None))
@@ -92,8 +102,98 @@ def run_audit_simulation(
         if item_id not in evaluated_item_ids:
             db.delete(existing)
 
+    run = _record_run(db, current.org_id, results, checklist_items, documents, counts)
     db.commit()
-    return AuditSimulationRunResult(**counts)
+    return AuditSimulationRunResult(**counts, run_id=run.id, run_number=run.run_number, run_code=run.run_code)
+
+
+_DEPARTMENT_ORDER = {d: i for i, d in enumerate(["qc", "qa", "utilities", "manufacturing", "engineering"])}
+_STATUS_ORDER = {"missing": 0, "incomplete": 1, "satisfied": 2}
+
+
+def _record_run(db, org_id, results, checklist_items, documents, counts) -> AuditSimulationRun:
+    """Store this run as the next numbered history entry, with a frozen copy
+    of every result (see AuditSimulationRun's docstring)."""
+    last = (
+        db.query(func.max(AuditSimulationRun.run_number)).filter(AuditSimulationRun.org_id == org_id).scalar()
+    ) or 0
+    run = AuditSimulationRun(org_id=org_id, run_number=last + 1, **counts)
+    db.add(run)
+
+    items_by_id = {item.id: item for item in checklist_items}
+    titles_by_id = {doc.id: doc.title for doc in documents}
+    rows = sorted(
+        results,
+        key=lambda r: (
+            _DEPARTMENT_ORDER.get(items_by_id[r.checklist_item_id].department, 99),
+            _STATUS_ORDER.get(r.status, 9),
+            items_by_id[r.checklist_item_id].item_name,
+        ),
+    )
+    for position, data in enumerate(rows):
+        item = items_by_id[data.checklist_item_id]
+        run.items.append(
+            AuditSimulationRunItem(
+                position=position,
+                department=item.department,
+                item_name=item.item_name,
+                citation=item.citation,
+                status=data.status,
+                severity=data.severity,
+                explanation=data.explanation,
+                matched_document_title=titles_by_id.get(data.matched_document_id),
+            )
+        )
+    db.flush()
+    return run
+
+
+def _get_org_run(db: Session, org_id: uuid.UUID, run_id: uuid.UUID) -> AuditSimulationRun:
+    run = db.get(AuditSimulationRun, run_id)
+    if run is None or run.org_id != org_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Simulation run not found")
+    return run
+
+
+@router.get("/runs", response_model=list[AuditSimulationRunSummaryOut])
+def list_audit_simulation_runs(
+    current: CurrentOrg = Depends(get_current_org),
+    db: Session = Depends(get_db),
+) -> list[AuditSimulationRun]:
+    """Every run for this org, newest first."""
+    return (
+        db.query(AuditSimulationRun)
+        .filter(AuditSimulationRun.org_id == current.org_id)
+        .order_by(AuditSimulationRun.run_number.desc())
+        .all()
+    )
+
+
+@router.get("/runs/{run_id}", response_model=AuditSimulationRunDetailOut)
+def get_audit_simulation_run(
+    run_id: uuid.UUID,
+    current: CurrentOrg = Depends(get_current_org),
+    db: Session = Depends(get_db),
+) -> AuditSimulationRun:
+    return _get_org_run(db, current.org_id, run_id)
+
+
+@router.get("/runs/{run_id}/report")
+def download_audit_simulation_run_report(
+    run_id: uuid.UUID,
+    current: CurrentOrg = Depends(get_current_org),
+    db: Session = Depends(get_db),
+) -> Response:
+    """PDF report for one run, built from its frozen results, so it reads the
+    same no matter when it's downloaded."""
+    run = _get_org_run(db, current.org_id, run_id)
+    org = db.get(Organization, current.org_id)
+    pdf_bytes = generate_audit_run_pdf(org, run)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=deviationtrace-{run.run_code}.pdf"},
+    )
 
 
 @router.get("/findings", response_model=list[AuditChecklistFindingOut])

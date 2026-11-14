@@ -3,21 +3,27 @@ import { Background } from "./components/Background";
 import { Logo } from "./components/Logo";
 import { RequireAuth } from "./components/RequireAuth";
 import { useAuth } from "./context/AuthContext";
+import { useOnboarding } from "./context/OnboardingContext";
 import { AuditSimulation } from "./pages/AuditSimulation";
 import { Dashboard } from "./pages/Dashboard";
 import { FindingDetail } from "./pages/FindingDetail";
+import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { Onboarding } from "./pages/Onboarding";
 import { OrgChecklist } from "./pages/OrgChecklist";
 import { Processing } from "./pages/Processing";
 import { ReportExport } from "./pages/ReportExport";
+import { SimulationRunDetail } from "./pages/SimulationRunDetail";
+import { SimulationRuns } from "./pages/SimulationRuns";
 import { Review } from "./pages/Review";
 import { Upload } from "./pages/Upload";
 import { VendorAudit } from "./pages/VendorAudit";
 
-// Upload ("/") is the header's gradient call-to-action rather than a nav item.
+// Upload ("/upload") is the header's gradient call-to-action rather than a nav item.
+// Onboarding isn't in the nav: it's shown automatically, once, before
+// anything else (see RequireAuth), and never again after it's done.
 const NAV_LINKS = [
-  { to: "/onboarding", label: "New Company" },
+  { to: "/", label: "Home" },
   { to: "/findings", label: "Findings" },
   { to: "/review", label: "Review" },
   { to: "/report", label: "Report" },
@@ -28,6 +34,10 @@ const NAV_LINKS = [
 
 function AppShell() {
   const { logout } = useAuth();
+  const { status } = useOnboarding();
+  // Until onboarding is done, the only thing to do is onboarding, so the
+  // header shows just the logo and Log out.
+  const showAppNav = status?.completed === true;
 
   return (
     <div className="min-h-screen">
@@ -40,11 +50,13 @@ function AppShell() {
           <Link to="/" aria-label="DeviationTrace home">
             <Logo />
           </Link>
+          {showAppNav && (
           <nav className="order-last -mx-1 flex w-full gap-1 overflow-x-auto text-sm lg:order-none lg:mx-0 lg:w-auto">
             {NAV_LINKS.map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
+                end={link.to === "/"}
                 className="shrink-0 rounded-lg px-3 py-2 font-medium transition-colors hover:bg-slate-100"
                 style={({ isActive }) =>
                   isActive
@@ -56,6 +68,7 @@ function AppShell() {
               </NavLink>
             ))}
           </nav>
+          )}
           <div className="flex items-center gap-4">
             <button
               type="button"
@@ -65,9 +78,11 @@ function AppShell() {
             >
               Log out
             </button>
-            <NavLink to="/" end className="btn-primary px-4 py-2 text-sm">
-              Upload document
-            </NavLink>
+            {showAppNav && (
+              <NavLink to="/upload" className="btn-primary px-4 py-2 text-sm">
+                Upload document
+              </NavLink>
+            )}
           </div>
         </div>
       </header>
@@ -85,7 +100,31 @@ function AppShell() {
             path="/"
             element={
               <RequireAuth>
+                <Home />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/upload"
+            element={
+              <RequireAuth>
                 <Upload />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/audit-simulation/runs"
+            element={
+              <RequireAuth>
+                <SimulationRuns />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/audit-simulation/runs/:runId"
+            element={
+              <RequireAuth>
+                <SimulationRunDetail />
               </RequireAuth>
             }
           />

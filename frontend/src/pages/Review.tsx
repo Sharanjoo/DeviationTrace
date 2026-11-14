@@ -126,7 +126,7 @@ export function Review() {
       {!loading && !error && counts.all === 0 && (
         <GlassPanel>
           <p style={{ color: "var(--text-muted)" }}>
-            No findings yet. <Link to="/" className="underline">Upload and process a document</Link> to start a review.
+            No findings yet. <Link to="/upload" className="underline">Upload and process a document</Link> to start a review.
           </p>
         </GlassPanel>
       )}

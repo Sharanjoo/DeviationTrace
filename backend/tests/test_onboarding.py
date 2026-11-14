@@ -102,3 +102,67 @@ def test_adopt_unknown_scope_template_returns_404():
     token = _register()
     response = client.post("/onboarding/scope-templates/not-a-real-category/adopt", headers=_headers(token))
     assert response.status_code == 404
+
+
+def test_new_org_has_not_completed_onboarding():
+    token = _register()
+    response = client.get("/onboarding/status", headers=_headers(token))
+    assert response.status_code == 200
+    body = response.json()
+    assert body["completed"] is False
+    assert body["onboarded_at"] is None
+    assert body["scope_category"] is None
+    assert body["org_name"] == "Onboarding Test Org"
+    assert body["industry"] == "device"
+
+
+def test_adopting_a_template_completes_onboarding_and_remembers_scope():
+    token = _register()
+    client.post("/onboarding/scope-templates/device_class_ii_diagnostic/adopt", headers=_headers(token))
+
+    body = client.get("/onboarding/status", headers=_headers(token)).json()
+    assert body["completed"] is True
+    assert body["onboarded_at"] is not None
+    assert body["scope_category"] == "device_class_ii_diagnostic"
+    assert body["scope_label"]
+
+
+def test_completing_with_standard_checklist_marks_onboarded_without_scope():
+    token = _register()
+    response = client.post("/onboarding/complete", headers=_headers(token))
+    assert response.status_code == 200
+    assert response.json()["completed"] is True
+    assert response.json()["scope_category"] is None
+
+    # Remembered server-side: a fresh read (e.g. a later login) sees it too.
+    body = client.get("/onboarding/status", headers=_headers(token)).json()
+    assert body["completed"] is True
+    assert body["scope_label"] is None
+
+
+def test_onboarding_status_is_kept_on_later_login():
+    email = f"onboarding-{uuid.uuid4().hex}@acme.example.com"
+    client.post(
+        "/auth/register",
+        json={"org_name": "Relogin Org", "industry": "drug", "email": email, "password": "testpass123"},
+    )
+    first = client.post("/auth/login", json={"email": email, "password": "testpass123"}).json()["access_token"]
+    client.post("/onboarding/scope-templates/drug_otc_oral_liquid/adopt", headers=_headers(first))
+
+    second = client.post("/auth/login", json={"email": email, "password": "testpass123"}).json()["access_token"]
+    body = client.get("/onboarding/status", headers=_headers(second)).json()
+    assert body["completed"] is True
+    assert body["scope_category"] == "drug_otc_oral_liquid"
+
+
+def test_first_onboarding_time_is_kept_when_completing_again():
+    token = _register()
+    first = client.post("/onboarding/complete", headers=_headers(token)).json()["onboarded_at"]
+    client.post("/onboarding/scope-templates/device_class_ii_diagnostic/adopt", headers=_headers(token))
+    body = client.get("/onboarding/status", headers=_headers(token)).json()
+    assert body["onboarded_at"] == first
+    assert body["scope_category"] == "device_class_ii_diagnostic"
+
+
+def test_onboarding_status_requires_auth():
+    assert client.get("/onboarding/status").status_code in (401, 403)

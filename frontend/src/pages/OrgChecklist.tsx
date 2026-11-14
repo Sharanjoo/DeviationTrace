@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { CompanyProfile } from "../components/CompanyProfile";
 import { GlassPanel } from "../components/GlassPanel";
 import { api, ApiError } from "../api/client";
+import { useOnboarding } from "../context/OnboardingContext";
 import { DEPARTMENT_LABELS, VENDOR_CATEGORIES_BY_DEPARTMENT, VENDOR_CATEGORY_LABELS } from "../departmentVendorMap";
 
 interface EffectiveChecklistItem {
@@ -20,6 +22,13 @@ const DEPARTMENTS = ["qc", "qa", "utilities", "manufacturing", "engineering"];
 const EMPTY_FORM = { item_name: "", citation: "", requirement_text: "", match_phrases: "" };
 
 export function OrgChecklist() {
+  // Set when onboarding has just finished, for a one-time welcome note;
+  // cleared on leaving this page so it never shows again.
+  // Captured once into local state, then cleared in the context so a later
+  // visit doesn't show it (survives StrictMode's dev double-mount).
+  const { justCompleted, clearJustCompleted } = useOnboarding();
+  const [welcome] = useState(justCompleted);
+  useEffect(() => clearJustCompleted(), [clearJustCompleted]);
   const [items, setItems] = useState<EffectiveChecklistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -113,6 +122,24 @@ export function OrgChecklist() {
         This is the checklist Internal Audit Simulation actually runs against for your org. Turn off items that
         don't apply to your site, and add your own — department by department.
       </p>
+
+      {welcome && (
+        <GlassPanel className="!p-5">
+          <p className="font-semibold">You're all set.</p>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+            {welcome.itemsAdded
+              ? `Added ${welcome.itemsAdded} item${welcome.itemsAdded === 1 ? "" : "s"} from your template to this checklist. `
+              : "You're starting from the standard checklist. "}
+            Next, upload your department reports and run the{" "}
+            <Link to="/audit-simulation" className="underline">
+              internal audit simulation
+            </Link>
+            .
+          </p>
+        </GlassPanel>
+      )}
+
+      <CompanyProfile />
 
       {loading && <p style={{ color: "var(--text-muted)" }}>Loading your checklist...</p>}
       {error && <p style={{ color: "var(--severity-critical)" }}>{error}</p>}

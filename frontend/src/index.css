@@ -67,6 +67,33 @@ a:focus-visible {
 }
 
 @layer components {
+  /* White card: same look as GlassPanel, as a class for components that
+     need their own padding/layout (e.g. stat cards, result groups). */
+  .card {
+    background: var(--glass-panel-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--glass-radius);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* Secondary action: white with a hairline border. */
+  .btn-secondary {
+    border: 1px solid var(--glass-border);
+    border-radius: 0.5rem;
+    background: #ffffff;
+    color: var(--text);
+    font-weight: 500;
+    transition: border-color 150ms ease, background-color 150ms ease;
+  }
+  .btn-secondary:hover:not(:disabled) {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+  .btn-secondary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
   /* Primary action: blue-to-violet gradient, white text, soft lift. */
   .btn-primary {
     border: 0;

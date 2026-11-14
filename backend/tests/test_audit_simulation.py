@@ -95,8 +95,10 @@ def test_audit_simulation_finds_the_intended_missing_incomplete_satisfied_mix(de
 
     run = client.post("/audit-simulation/run", headers=headers)
     assert run.status_code == 200
-    counts = run.json()
+    body = run.json()
+    counts = {k: body[k] for k in ("missing", "incomplete", "satisfied")}
     assert counts == {"missing": 6, "incomplete": 2, "satisfied": 7}
+    assert body["run_code"].startswith("SIM-")
 
     listed = client.get("/audit-simulation/findings", headers=headers)
     assert listed.status_code == 200

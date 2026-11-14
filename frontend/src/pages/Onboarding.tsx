@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { GlassPanel } from "../components/GlassPanel";
 import { api, ApiError } from "../api/client";
+import { useOnboarding, type OnboardingStatus } from "../context/OnboardingContext";
 import { DEPARTMENT_LABELS, VENDOR_CATEGORY_LABELS } from "../departmentVendorMap";
 
 interface ScopeTemplateSummary {
@@ -41,15 +41,20 @@ function groupBy<T, K extends string>(items: T[], key: (item: T) => K): [K, T[]]
   return Array.from(map.entries());
 }
 
+const INDUSTRY_LABELS: Record<string, string> = { device: "Medical device", drug: "Drug manufacturer" };
+
+/** First-login setup, shown once per org (RequireAuth routes here until
+ * it's done, and away from here afterwards). Choosing a template or the
+ * standard checklist both finish it; the choice is stored on the org. */
 export function Onboarding() {
-  const navigate = useNavigate();
+  const { status, complete } = useOnboarding();
   const [templates, setTemplates] = useState<ScopeTemplateSummary[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [detail, setDetail] = useState<ScopeTemplateDetail | null>(null);
   const [loadingList, setLoadingList] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [adopting, setAdopting] = useState(false);
-  const [adoptResult, setAdoptResult] = useState<{ added: number; skipped: number } | null>(null);
+  const [finishing, setFinishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,7 +68,6 @@ export function Onboarding() {
   const handleSelect = (category: string) => {
     setSelected(category);
     setDetail(null);
-    setAdoptResult(null);
     setLoadingDetail(true);
     setError(null);
     api
@@ -79,30 +83,53 @@ export function Onboarding() {
     setError(null);
     try {
       const result = await api.post<{ added: number; skipped: number }>(`/onboarding/scope-templates/${selected}/adopt`);
-      setAdoptResult(result);
+      // Read status directly (not via refresh) so the redirect and the
+      // welcome flag land in the same update.
+      complete(await api.get<OnboardingStatus>("/onboarding/status"), result.added);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to adopt skeleton.");
-    } finally {
       setAdopting(false);
     }
   };
+
+  const handleUseStandard = async () => {
+    setFinishing(true);
+    setError(null);
+    try {
+      complete(await api.post<OnboardingStatus>("/onboarding/complete"), 0);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to finish setup.");
+      setFinishing(false);
+    }
+  };
+
+  // Only templates for the industry the org registered with.
+  const visibleTemplates = templates.filter((t) => !status || t.industry === status.industry);
 
   const checklistGroups = detail ? groupBy(detail.checklist_items, (i) => i.department) : [];
   const vendorGroups = detail ? groupBy(detail.vendor_standards, (s) => s.vendor_category) : [];
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <h1 className="text-3xl font-bold">New company skeleton</h1>
+      <p className="eyebrow">One-time setup</p>
+      <h1 className="text-3xl font-bold">Set up {status?.org_name ?? "your company"}</h1>
       <p style={{ color: "var(--text-muted)" }}>
-        Tell us what you make and we'll show you the SOPs, reports, and records a comparable real manufacturer
-        needed — modeled on a real audit or FDA warning letter, with citations, not generic boilerplate.
+        Pick the scope closest to what you make and we'll show the SOPs, reports, and records a comparable real
+        manufacturer needed, with citations. You only do this once; it's remembered for everyone in your
+        organization.
       </p>
+      {status && (
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          Showing templates for <strong>{INDUSTRY_LABELS[status.industry] ?? status.industry}</strong>, the industry
+          you registered with.
+        </p>
+      )}
 
       {loadingList && <p style={{ color: "var(--text-muted)" }}>Loading scope templates...</p>}
       {error && <p style={{ color: "var(--severity-critical)" }}>{error}</p>}
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        {templates.map((t) => (
+        {visibleTemplates.map((t) => (
           <button
             key={t.scope_category}
             type="button"
@@ -124,6 +151,28 @@ export function Onboarding() {
           </button>
         ))}
       </div>
+
+      {!loadingList && visibleTemplates.length === 0 && (
+        <GlassPanel>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+            There's no template for your industry yet. You can start with the standard checklist and add your own
+            items department by department.
+          </p>
+        </GlassPanel>
+      )}
+
+      <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+        None of these fit?{" "}
+        <button
+          type="button"
+          onClick={handleUseStandard}
+          disabled={finishing || adopting}
+          className="font-medium underline"
+          style={{ color: "var(--brand-blue-text)" }}
+        >
+          {finishing ? "Setting up..." : "Use the standard checklist instead"}
+        </button>
+      </p>
 
       {loadingDetail && <p style={{ color: "var(--text-muted)" }}>Building skeleton...</p>}
 
@@ -151,17 +200,6 @@ export function Onboarding() {
             </button>
           </div>
 
-          {adoptResult && (
-            <GlassPanel>
-              <p className="text-sm">
-                Added {adoptResult.added} new item{adoptResult.added === 1 ? "" : "s"} to your checklist
-                {adoptResult.skipped > 0 && ` (${adoptResult.skipped} already there)`}.{" "}
-                <button type="button" onClick={() => navigate("/org-checklist")} className="underline">
-                  Go to your checklist
-                </button>
-              </p>
-            </GlassPanel>
-          )}
 
           <h2 className="mt-4 text-lg font-semibold">Required documents by department</h2>
           {checklistGroups.map(([department, items]) => (
