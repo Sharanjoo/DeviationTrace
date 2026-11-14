@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api, ApiError } from "../api/client";
+import type { AiAssessment, AiSettings } from "../ai";
+import { AiReviewPanel } from "./AiReviewPanel";
 import {
   DEPARTMENT_NAMES,
   REVIEW_LABELS,
@@ -31,12 +33,28 @@ export function ContentFindings({
   onChange: (finding: ContentFinding) => void;
 }) {
   const [showDismissed, setShowDismissed] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(false);
+  const [assessments, setAssessments] = useState<AiAssessment[]>([]);
+
+  useEffect(() => {
+    api
+      .get<AiSettings>("/org/ai-settings")
+      .then((settings) => {
+        setAiEnabled(settings.enabled);
+        if (settings.enabled) return api.get<AiAssessment[]>(`/audit-simulation/runs/${run.id}/ai-assessments`).then(setAssessments);
+      })
+      .catch(() => setAiEnabled(false));
+  }, [run.id]);
 
   const byDocument = new Map<string, ContentFinding[]>();
+  // Every content-checked document gets a card, including ones with no gaps,
+  // so it can still be reviewed with AI.
+  for (const d of run.content_documents ?? []) byDocument.set(d.title, []);
   for (const f of run.content_findings) {
     if (!byDocument.has(f.document_title)) byDocument.set(f.document_title, []);
     byDocument.get(f.document_title)!.push(f);
   }
+  const documentFor = (title: string) => run.content_documents?.find((d) => d.title === title);
   const dismissed = run.content_findings.filter((f) => f.decision === "false_positive").length;
   const checked = run.content_documents_checked ?? 0;
 
@@ -61,7 +79,7 @@ export function ContentFindings({
         )}
       </div>
 
-      {checked > 0 && run.content_findings.length === 0 && (
+      {checked > 0 && run.content_findings.length === 0 && !aiEnabled && (
         <div className="card flex items-center gap-3 p-5 text-sm">
           <StatusIcon tone="good" size={22} />
           Every content-checked document addresses all of its requirements.
@@ -78,18 +96,20 @@ export function ContentFindings({
       {[...byDocument.entries()].map(([title, findings]) => {
         const visible = findings.filter((f) => showDismissed || f.decision !== "false_positive");
         const open = findings.filter((f) => f.decision !== "false_positive").length;
-        const first = findings[0];
+        const doc = documentFor(title);
+        const documentType = findings[0]?.document_type ?? doc?.type;
+        const department = findings[0]?.department ?? doc?.department ?? "";
         return (
           <section key={title} className="card overflow-hidden">
             <header className="border-b px-5 py-4" style={{ borderColor: "var(--glass-border)" }}>
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-lg font-semibold [overflow-wrap:anywhere]">{displayTitle(title)}</h3>
                 <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase" style={{ background: "var(--tint-violet)", color: "#6d28d9" }}>
-                  {first.document_type === "sop" ? "SOP" : "Deviation report"}
+                  {documentType === "sop" ? "SOP" : "Deviation report"}
                 </span>
               </div>
               <p className="mt-0.5 text-sm" style={muted}>
-                {DEPARTMENT_NAMES[first.department] ?? first.department} · {open} open gap{open === 1 ? "" : "s"}
+                {DEPARTMENT_NAMES[department] ?? department} · {open} open gap{open === 1 ? "" : "s"}
                 {open !== findings.length && ` · ${findings.length - open} dismissed`}
               </p>
             </header>
@@ -99,10 +119,23 @@ export function ContentFindings({
               ))}
               {visible.length === 0 && (
                 <li className="px-5 py-4 text-sm" style={muted}>
-                  All gaps for this document were dismissed as false positives.
+                  {findings.length === 0
+                    ? "The rule-based check found no gaps in this document."
+                    : "All gaps for this document were dismissed as false positives."}
                 </li>
               )}
             </ul>
+            {aiEnabled && doc && (
+              <AiReviewPanel
+                runId={run.id}
+                documentId={doc.id}
+                ruleFindings={findings}
+                assessments={assessments.filter((a) => a.document_id === doc.id)}
+                onReviewed={(fresh) =>
+                  setAssessments((prev) => [...prev.filter((a) => a.document_id !== doc.id), ...fresh])
+                }
+              />
+            )}
           </section>
         );
       })}

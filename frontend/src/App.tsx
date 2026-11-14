@@ -5,6 +5,7 @@ import { Logo } from "./components/Logo";
 import { RequireAuth } from "./components/RequireAuth";
 import { useOnboarding } from "./context/OnboardingContext";
 import { activeTab, NAV_SECTIONS, pathMatches } from "./navigation";
+import { AiActivityLog } from "./pages/AiActivityLog";
 import { AuditReports } from "./pages/AuditReports";
 import { AuditSimulation } from "./pages/AuditSimulation";
 import { CompanyProfile } from "./pages/CompanyProfile";
@@ -212,6 +213,14 @@ function AppShell() {
             element={
               <RequireAuth>
                 <CompanyProfile />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/company/ai-log"
+            element={
+              <RequireAuth>
+                <AiActivityLog />
               </RequireAuth>
             }
           />

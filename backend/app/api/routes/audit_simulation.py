@@ -204,6 +204,9 @@ def _record_content_gaps(db: Session, run: AuditSimulationRun, documents: list[D
             )
         )
     run.content_documents_checked = len(checked)
+    run.content_documents = [
+        {"id": str(d.id), "title": d.title, "type": d.type, "department": d.department} for d in checked
+    ]
 
 
 def _record_documentation_issues(db: Session, run: AuditSimulationRun, documents: list[Document]) -> None:

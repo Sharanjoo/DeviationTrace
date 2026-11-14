@@ -1,3 +1,4 @@
+from app.models.ai import AiInteraction, AuditSimulationAiAssessment, OrgAiSettings
 from app.models.audit_checklist_finding import AuditChecklistFinding
 from app.models.audit_checklist_item import AuditChecklistItem
 from app.models.audit_simulation_run import (
@@ -20,6 +21,9 @@ from app.models.vendor_audit_finding import VendorAuditFinding
 from app.models.vendor_standard import VendorStandard
 
 __all__ = [
+    "AiInteraction",
+    "AuditSimulationAiAssessment",
+    "OrgAiSettings",
     "AuditChecklistFinding",
     "AuditChecklistItem",
     "AuditSimulationContentFinding",

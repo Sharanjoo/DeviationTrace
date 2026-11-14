@@ -50,6 +50,9 @@ class AuditSimulationRun(Base):
     department_contacts: Mapped[list[dict] | None] = mapped_column(JSONB, nullable=True)
     # How many SOPs / deviation reports had their content checked.
     content_documents_checked: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # The SOPs / deviation reports that were content-checked:
+    # [{"id", "title", "type", "department"}] (AI review works on these).
+    content_documents: Mapped[list[dict] | None] = mapped_column(JSONB, nullable=True)
 
     items: Mapped[list["AuditSimulationRunItem"]] = relationship(
         back_populates="run", cascade="all, delete-orphan", order_by="AuditSimulationRunItem.position"

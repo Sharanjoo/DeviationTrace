@@ -123,6 +123,8 @@ export interface SimulationRunDetail extends SimulationRunSummary {
   items: SimulationRunItem[];
   content_findings: ContentFinding[];
   documentation_issues: RunDocumentationIssue[];
+  /** SOPs and deviation reports that were content-checked in this run. */
+  content_documents: { id: string; title: string; type: string; department: string }[] | null;
 }
 
 export function readiness(run: Pick<SimulationRunSummary, "satisfied" | "total">): number {

@@ -215,8 +215,17 @@ class RunDocumentationIssueOut(DocumentationIssueOut):
     document_title: str
 
 
+class ContentDocumentOut(BaseModel):
+    id: uuid.UUID
+    title: str
+    type: str
+    department: str | None
+
+
 class AuditSimulationRunDetailOut(AuditSimulationRunSummaryOut):
     items: list[AuditSimulationRunItemOut]
+    # SOPs / deviation reports that were content-checked (AI review targets).
+    content_documents: list[ContentDocumentOut] | None
     content_findings: list[ContentFindingOut]
     documentation_issues: list[RunDocumentationIssueOut]
 

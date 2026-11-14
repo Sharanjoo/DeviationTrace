@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, ApiError } from "../api/client";
+import { AiSettingsCard } from "../components/AiSettingsCard";
 import { useOnboarding } from "../context/OnboardingContext";
 import { displayName, initials, ROLE_LABELS, ROLES, type Member, type OrgProfile } from "../orgProfile";
 
@@ -193,6 +194,8 @@ export function CompanyProfile() {
 
         {isAdmin && <AddMember onAdded={load} />}
       </section>
+
+      <AiSettingsCard isAdmin={isAdmin} />
 
       <section className="card p-5">
         <h2 className="font-semibold">What each role can do</h2>

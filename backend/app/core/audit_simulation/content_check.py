@@ -50,21 +50,33 @@ def requirement_title(clause: RegulatoryClause) -> str:
     return clause.title or f"{_REGULATION_NAMES.get(clause.regulation, clause.regulation)} {clause.clause_number}"
 
 
-def check_document_content(db: Session, document: Document, industry: str) -> list[ContentGap]:
-    """Content gaps for one processed SOP or deviation report, against the
-    regulations that apply to the company's industry."""
-    if document.type not in CONTENT_DOCUMENT_TYPES or document.status != "processed" or not document.sections:
-        return []
-
-    clauses = (
+def applicable_clauses(db: Session, document: Document, industry: str) -> list[RegulatoryClause]:
+    """The requirements a SOP or deviation report is checked against: its
+    topic, its document type, and the regulations for the industry. Shared
+    with the AI review so both assess the same requirements."""
+    return (
         db.query(RegulatoryClause)
         .filter(
             RegulatoryClause.process_area.in_(process_areas_for(document)),
             RegulatoryClause.regulation.in_(REGULATIONS_BY_INDUSTRY.get(industry, ("qmsr", "iso13485", "cfr211"))),
             RegulatoryClause.document_type_applicability.any(document.type),
         )
+        .order_by(RegulatoryClause.regulation, RegulatoryClause.clause_number)
         .all()
     )
+
+
+def citation(clause: RegulatoryClause) -> str:
+    return f"{_REGULATION_NAMES.get(clause.regulation, clause.regulation)} {clause.clause_number}"
+
+
+def check_document_content(db: Session, document: Document, industry: str) -> list[ContentGap]:
+    """Content gaps for one processed SOP or deviation report, against the
+    regulations that apply to the company's industry."""
+    if document.type not in CONTENT_DOCUMENT_TYPES or document.status != "processed" or not document.sections:
+        return []
+
+    clauses = applicable_clauses(db, document, industry)
     by_id = {c.id: c for c in clauses}
     sections = sorted(document.sections, key=lambda s: s.order)
     headings = {s.id: s.heading for s in sections}
