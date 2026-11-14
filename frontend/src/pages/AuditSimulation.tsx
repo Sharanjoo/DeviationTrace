@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api, ApiError } from "../api/client";
 import {
   CheckHeader,
@@ -50,10 +50,10 @@ export function AuditSimulation() {
   const [findings, setFindings] = useState<AuditChecklistFindingOut[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [running, setRunning] = useState(false);
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [savedRun, setSavedRun] = useState<{ run_id: string; run_code: string } | null>(null);
+  const navigate = useNavigate();
+  const startNew = () => navigate("/audit-simulation/new");
 
   const loadFindings = () => {
     setLoading(true);
@@ -67,19 +67,6 @@ export function AuditSimulation() {
   useEffect(() => {
     loadFindings();
   }, []);
-
-  const handleRun = async () => {
-    setRunning(true);
-    setError(null);
-    try {
-      setSavedRun(await api.post<{ run_id: string; run_code: string }>("/audit-simulation/run"));
-      await loadFindings();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Run failed.");
-    } finally {
-      setRunning(false);
-    }
-  };
 
   // Stats follow the department filter; the status filter only narrows rows.
   const inDepartment = useMemo(
@@ -121,39 +108,29 @@ export function AuditSimulation() {
               </Link>{" "}
               ·{" "}
               <Link to="/audit-simulation/runs" className="underline">
-                Run history
+                All audits
               </Link>
             </>
           ) : undefined
         }
         action={
           findings.length > 0 && (
-            <button type="button" onClick={handleRun} disabled={running} className="btn-primary px-5 py-2.5 text-sm">
-              {running ? "Running..." : "Run simulation again"}
+            <button type="button" onClick={startNew} className="btn-primary px-5 py-2.5 text-sm">
+              Run new simulation
             </button>
           )
         }
       />
 
       {error && <p style={{ color: "var(--severity-critical)" }}>{error}</p>}
-      {savedRun && (
-        <div className="card flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">
-          <p>
-            Saved as <strong>{savedRun.run_code}</strong>. It stays in your run history with its own report.
-          </p>
-          <Link to={`/audit-simulation/runs/${savedRun.run_id}`} className="btn-secondary px-3 py-1.5 text-xs">
-            View {savedRun.run_code}
-          </Link>
-        </div>
-      )}
       {loading && findings.length === 0 && <p style={{ color: "var(--text-muted)" }}>Loading results...</p>}
 
       {!loading && findings.length === 0 && (
         <EmptyState
           title="No simulation run yet"
-          body="Upload each department's reports (as type “Department report”), then run the simulation to see what an auditor would find missing or incomplete."
-          actionLabel={running ? "Running..." : "Run simulation"}
-          onAction={handleRun}
+          body="Start one by entering the audit's details, then upload each department's reports and run it to see what an auditor would find missing or incomplete."
+          actionLabel="Start a simulation"
+          onAction={startNew}
         />
       )}
 

@@ -6,6 +6,7 @@
 regulation: iso13485
 clauses:
   - clause_number: "8.3.1"
+    title: "Procedure for controlling nonconforming product"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation]
     expected_heading: "Description"
@@ -18,6 +19,7 @@ clauses:
       control of nonconforming product.
 
   - clause_number: "8.3.2"
+    title: "Dealing with nonconforming product before delivery"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation]
     expected_heading: "Investigation"
@@ -32,6 +34,7 @@ clauses:
       concession, or taking action to preclude original intended use.
 
   - clause_number: "8.3.4"
+    title: "Nonconforming product found after delivery"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation, batch_record]
     expected_heading: "Closure"
@@ -45,6 +48,7 @@ clauses:
       actions taken, including issuance of advisory notices where applicable.
 
   - clause_number: "8.5.2"
+    title: "Corrective action"
     process_area: capa
     document_type_applicability: [sop, deviation]
     expected_heading: "Corrective Action (CAPA)"
@@ -60,6 +64,7 @@ clauses:
       and review of the effectiveness of the corrective action taken.
 
   - clause_number: "8.5.3"
+    title: "Preventive action"
     process_area: capa
     document_type_applicability: [sop, deviation]
     expected_heading: "Corrective Action (CAPA)"
@@ -74,6 +79,7 @@ clauses:
       review of effectiveness.
 
   - clause_number: "8.2.3"
+    title: "Feedback and complaints as early warning for CAPA"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation]
     expected_heading: "Description"

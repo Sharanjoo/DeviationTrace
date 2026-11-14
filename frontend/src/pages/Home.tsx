@@ -3,23 +3,21 @@ import { Link, useNavigate } from "react-router-dom";
 import { api, ApiError } from "../api/client";
 import { ProgressBar, type StatusDef } from "../components/CheckResults";
 import { useOnboarding } from "../context/OnboardingContext";
-import { countBy } from "../countBy";
-import { downloadRunReport, formatRunDate, readiness, type SimulationRunSummary } from "../simulationRuns";
+import {
+  downloadRunReport,
+  formatRunDate,
+  readiness,
+  runCounts,
+  runDate,
+  type SimulationRunSummary,
+} from "../simulationRuns";
+import type { Vendor } from "../vendors";
 
 interface ChecklistItem {
   department: string;
   is_custom: boolean;
   is_excluded: boolean;
 }
-interface VendorDocument {
-  id: string;
-  status: string;
-}
-interface VendorFinding {
-  document: { id: string };
-  status: string;
-}
-
 const SIM_STATUSES: StatusDef[] = [
   { value: "missing", label: "Missing", tone: "bad" },
   { value: "incomplete", label: "Incomplete", tone: "warn" },
@@ -107,10 +105,8 @@ export function Home() {
   const { status } = useOnboarding();
   const [runs, setRuns] = useState<SimulationRunSummary[]>([]);
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
-  const [vendorDocs, setVendorDocs] = useState<VendorDocument[]>([]);
-  const [vendorFindings, setVendorFindings] = useState<VendorFinding[]>([]);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
-  const [running, setRunning] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -118,33 +114,24 @@ export function Home() {
     Promise.all([
       api.get<SimulationRunSummary[]>("/audit-simulation/runs"),
       api.get<ChecklistItem[]>("/audit-simulation/checklist"),
-      api.get<VendorDocument[]>("/documents?type=vendor_audit_report"),
-      api.get<VendorFinding[]>("/vendor-audit/findings"),
+      api.get<Vendor[]>("/vendors"),
     ])
-      .then(([r, c, d, f]) => {
+      .then(([r, c, v]) => {
         setRuns(r);
         setChecklist(c);
-        setVendorDocs(d);
-        setVendorFindings(f);
+        setVendors(v);
       })
       .catch((err) => setError(err instanceof ApiError ? err.message : "Failed to load your dashboard."))
       .finally(() => setLoading(false));
   }, []);
 
-  const latest = runs[0] ?? null;
+  const completedRuns = runs.filter((r) => r.status === "completed");
+  const latest = completedRuns[0] ?? null;
+  // The newest unfinished audit (details entered, not yet run), if any.
+  const draft = runs.find((r) => r.status === "draft") ?? null;
 
-  const handleRun = async () => {
-    setRunning(true);
-    setError(null);
-    try {
-      const result = await api.post<{ run_id: string }>("/audit-simulation/run");
-      navigate(`/audit-simulation/runs/${result.run_id}`);
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Run failed.");
-      setRunning(false);
-    }
-  };
-
+  // Quick download of the latest completed audit's report; any other audit
+  // is picked on the Reports page.
   const handleDownload = async () => {
     if (!latest) return;
     setDownloading(true);
@@ -163,9 +150,15 @@ export function Home() {
   const customItems = checklist.filter((i) => i.is_custom).length;
   const excludedItems = checklist.filter((i) => i.is_excluded).length;
 
-  const vendorCounts = countBy(vendorFindings, (f) => f.status);
-  const vendorTotal = vendorFindings.length;
-  const vendorChecked = new Set(vendorFindings.map((f) => f.document.id)).size;
+  // Vendor summary across each vendor's latest audit.
+  const latestVendorAudits = vendors.flatMap((v) => (v.latest_audit ? [v.latest_audit] : []));
+  const vendorCounts = {
+    missing: latestVendorAudits.reduce((n, a) => n + a.missing, 0),
+    partial: latestVendorAudits.reduce((n, a) => n + a.partial, 0),
+    satisfied: latestVendorAudits.reduce((n, a) => n + a.satisfied, 0),
+  };
+  const vendorTotal = vendorCounts.missing + vendorCounts.partial + vendorCounts.satisfied;
+  const vendorAuditCount = vendors.reduce((n, v) => n + v.audit_count, 0);
 
   const muted = { color: "var(--text-muted)" };
 
@@ -199,12 +192,21 @@ export function Home() {
                 description="Check every department's required records against your checklist, the way an auditor would."
                 actions={
                   <>
-                    <button type="button" onClick={handleRun} disabled={running} className="btn-primary px-4 py-2 text-sm">
-                      {running ? "Running..." : "Run new simulation"}
+                    <button
+                      type="button"
+                      onClick={() => navigate("/audit-simulation/new")}
+                      className="btn-primary px-4 py-2 text-sm"
+                    >
+                      Run new simulation
                     </button>
-                    {latest && (
-                      <Link to="/audit-simulation" className="btn-secondary px-4 py-2 text-sm">
-                        Current results
+                    {draft && (
+                      <Link to={`/audit-simulation/runs/${draft.id}`} className="btn-secondary px-4 py-2 text-sm">
+                        Continue {draft.run_code} (draft)
+                      </Link>
+                    )}
+                    {runs.length > 0 && (
+                      <Link to="/audit-simulation/runs" className="btn-secondary px-4 py-2 text-sm">
+                        All audits ({runs.length})
                       </Link>
                     )}
                   </>
@@ -213,14 +215,17 @@ export function Home() {
                 {latest ? (
                   <div>
                     <div className="flex items-end justify-between gap-4">
-                      <Stat label={`Readiness at ${latest.run_code}`} value={<span className="text-gradient">{readiness(latest)}%</span>} />
-                      <p className="text-xs" style={muted}>
-                        {formatRunDate(latest.created_at)}
+                      <Stat label="Latest readiness" value={<span className="text-gradient">{readiness(latest)}%</span>} />
+                      <p className="min-w-0 text-right text-xs" style={muted}>
+                        <span className="block truncate font-semibold" style={{ color: "var(--text)" }}>
+                          {latest.run_code} · {latest.title ?? "Quick run"}
+                        </span>
+                        {formatRunDate(runDate(latest))}
                       </p>
                     </div>
                     <ProgressBar
                       statuses={SIM_STATUSES}
-                      counts={{ missing: latest.missing, incomplete: latest.incomplete, satisfied: latest.satisfied }}
+                      counts={runCounts(latest)}
                       className="mt-3"
                     />
                     <p className="mt-2 text-xs" style={muted}>
@@ -229,7 +234,7 @@ export function Home() {
                   </div>
                 ) : (
                   <p className="text-sm" style={muted}>
-                    No runs yet. Upload department reports first for meaningful results.
+                    No runs yet. You'll enter the audit's details, upload each department's reports, then run it.
                   </p>
                 )}
               </Tile>
@@ -243,7 +248,7 @@ export function Home() {
                 description="The required records the simulation checks for. Turn items off or add your own."
                 actions={
                   <Link to="/org-checklist" className="btn-secondary px-4 py-2 text-sm">
-                    Edit checklist
+                    View checklist
                   </Link>
                 }
               >
@@ -260,22 +265,34 @@ export function Home() {
                 color="var(--brand-blue)"
                 step="Report"
                 title="Generate report"
-                description="A PDF of the latest simulation run, ready to share with QA leadership or your SME."
+                description="A PDF of any completed audit, ready to share with QA leadership or your SME."
                 actions={
-                  <button
-                    type="button"
-                    onClick={handleDownload}
-                    disabled={!latest || downloading}
-                    className="btn-primary px-4 py-2 text-sm"
-                  >
-                    {downloading ? "Preparing PDF..." : latest ? `Download ${latest.run_code} report` : "Run a simulation first"}
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => navigate("/audit-simulation/reports")}
+                      disabled={!latest}
+                      className="btn-primary px-4 py-2 text-sm"
+                    >
+                      {latest ? "Choose an audit" : "Run a simulation first"}
+                    </button>
+                    {latest && (
+                      <button
+                        type="button"
+                        onClick={handleDownload}
+                        disabled={downloading}
+                        className="btn-secondary px-4 py-2 text-sm"
+                      >
+                        {downloading ? "Preparing PDF..." : `Latest (${latest.run_code})`}
+                      </button>
+                    )}
+                  </>
                 }
               >
                 {latest ? (
                   <p className="text-sm" style={muted}>
-                    From <strong style={{ color: "var(--text)" }}>{latest.run_code}</strong>, run{" "}
-                    {formatRunDate(latest.created_at)}. {latest.total} requirements, grouped by department.
+                    {completedRuns.length} completed audit{completedRuns.length === 1 ? "" : "s"} to choose from. Filter
+                    by name, type, lead auditor, departments or date, then download the one you need.
                   </p>
                 ) : (
                   <p className="text-sm" style={muted}>
@@ -289,36 +306,49 @@ export function Home() {
                 tint="var(--tint-violet)"
                 color="var(--brand-violet)"
                 step="Review"
-                title="Run history"
-                description="Review the latest run and every previous one by its ID, each with its own findings and report."
+                title="All audits"
+                description="Every audit by its ID and name. Open one to see its findings and report."
                 actions={
                   <Link to="/audit-simulation/runs" className="btn-secondary px-4 py-2 text-sm">
-                    View all runs{runs.length > 0 && ` (${runs.length})`}
+                    View all audits{runs.length > 0 && ` (${runs.length})`}
                   </Link>
                 }
               >
                 {runs.length > 0 ? (
                   <ul className="divide-y text-sm" style={{ borderColor: "var(--glass-border)" }}>
-                    {runs.slice(0, 3).map((run) => (
+                    {runs.slice(0, 5).map((run) => (
                       <li key={run.id} style={{ borderColor: "var(--glass-border)" }}>
                         <Link
                           to={`/audit-simulation/runs/${run.id}`}
-                          className="flex items-center justify-between gap-4 py-2 hover:underline"
+                          className="flex items-center gap-3 rounded-md py-2 hover:bg-slate-50"
                         >
-                          <span className="font-semibold" style={{ color: "var(--brand-blue-text)" }}>
+                          <span className="w-[76px] shrink-0 font-semibold" style={{ color: "var(--brand-blue-text)" }}>
                             {run.run_code}
                           </span>
-                          <span className="flex-1 truncate" style={muted}>
-                            {formatRunDate(run.created_at)}
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate font-medium">{run.title ?? "Quick run (all departments)"}</span>
+                            <span className="block truncate text-xs" style={muted}>
+                              {formatRunDate(runDate(run))}
+                              {run.lead_name && ` · ${run.lead_name}`}
+                            </span>
                           </span>
-                          <span className="font-semibold">{readiness(run)}%</span>
+                          {run.status === "draft" ? (
+                            <span
+                              className="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                              style={{ background: "var(--severity-major-tint)", color: "var(--severity-major)" }}
+                            >
+                              Draft
+                            </span>
+                          ) : (
+                            <span className="shrink-0 font-semibold">{readiness(run)}%</span>
+                          )}
                         </Link>
                       </li>
                     ))}
                   </ul>
                 ) : (
                   <p className="text-sm" style={muted}>
-                    Each run is saved here with an ID like SIM-0001.
+                    Each audit is saved here with an ID like SIM-0001 and the name you give it.
                   </p>
                 )}
               </Tile>
@@ -334,31 +364,28 @@ export function Home() {
               tint="#fdf2f8"
               color="#db2777"
               title="Vendor audit cross-check"
-              description="Check each supplier's audit report against the standards for its vendor category."
+              description="Your vendors and their audit history. Open a vendor to review previous audits or start a new one."
               actions={
-                <>
-                  <Link to="/vendor-audit" className="btn-primary px-4 py-2 text-sm">
-                    Open vendor audit
-                  </Link>
-                  <Link to="/upload" className="btn-secondary px-4 py-2 text-sm">
-                    Upload vendor report
-                  </Link>
-                </>
+                <Link to="/vendor-audit" className="btn-primary px-4 py-2 text-sm">
+                  Open vendor audit
+                </Link>
               }
             >
               <div className="grid gap-6 sm:grid-cols-[repeat(3,minmax(0,1fr))_2fr] sm:items-end">
-                <Stat label="Reports uploaded" value={vendorDocs.length} />
-                <Stat label="Cross-checked" value={`${vendorChecked} / ${vendorDocs.length}`} />
+                <Stat label="Vendors" value={vendors.length} />
+                <Stat label="Audits" value={vendorAuditCount} />
                 <Stat
-                  label="Standards met"
-                  value={vendorTotal ? `${Math.round(((vendorCounts.satisfied ?? 0) / vendorTotal) * 100)}%` : "—"}
+                  label="Standards met (latest audits)"
+                  value={vendorTotal ? `${Math.round((vendorCounts.satisfied / vendorTotal) * 100)}%` : "—"}
                 />
                 <div>
                   <ProgressBar statuses={VENDOR_STATUSES} counts={vendorCounts} />
                   <p className="mt-2 text-xs" style={muted}>
                     {vendorTotal
-                      ? `${vendorCounts.missing ?? 0} missing · ${vendorCounts.partial ?? 0} partial · ${vendorCounts.satisfied ?? 0} satisfied`
-                      : "No cross-checks run yet"}
+                      ? `${vendorCounts.missing} missing · ${vendorCounts.partial} partial · ${vendorCounts.satisfied} satisfied`
+                      : vendors.length
+                        ? "No audits yet"
+                        : "No vendors added yet"}
                   </p>
                 </div>
               </div>

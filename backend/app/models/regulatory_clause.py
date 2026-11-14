@@ -17,6 +17,9 @@ class RegulatoryClause(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     regulation: Mapped[str] = mapped_column(String(32), nullable=False)  # "qmsr" | "iso13485" | "cfr211"
     clause_number: Mapped[str] = mapped_column(String(64), nullable=False)
+    # Short plain-English name of the requirement, shown to users in place
+    # of the bare clause number.
+    title: Mapped[str | None] = mapped_column(String(255), nullable=True)
     requirement_text: Mapped[str] = mapped_column(Text, nullable=False)
     process_area: Mapped[str] = mapped_column(String(64), nullable=False)
     document_type_applicability: Mapped[list[str]] = mapped_column(ARRAY(String(32)), nullable=False)

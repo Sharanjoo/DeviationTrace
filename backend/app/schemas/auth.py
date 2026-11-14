@@ -8,6 +8,7 @@ class RegisterRequest(BaseModel):
     industry: str  # "device" | "drug"
     email: EmailStr
     password: str
+    full_name: str | None = None
 
 
 class LoginRequest(BaseModel):

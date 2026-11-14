@@ -1,14 +1,19 @@
-import { Link, NavLink, Route, Routes } from "react-router-dom";
+import { Link, Route, Routes, useLocation } from "react-router-dom";
+import { AccountMenu } from "./components/AccountMenu";
 import { Background } from "./components/Background";
 import { Logo } from "./components/Logo";
 import { RequireAuth } from "./components/RequireAuth";
-import { useAuth } from "./context/AuthContext";
 import { useOnboarding } from "./context/OnboardingContext";
+import { activeTab, NAV_SECTIONS, pathMatches } from "./navigation";
+import { AuditReports } from "./pages/AuditReports";
 import { AuditSimulation } from "./pages/AuditSimulation";
+import { CompanyProfile } from "./pages/CompanyProfile";
 import { Dashboard } from "./pages/Dashboard";
+import { DepartmentChecklist } from "./pages/DepartmentChecklist";
 import { FindingDetail } from "./pages/FindingDetail";
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
+import { NewAudit } from "./pages/NewAudit";
 import { Onboarding } from "./pages/Onboarding";
 import { OrgChecklist } from "./pages/OrgChecklist";
 import { Processing } from "./pages/Processing";
@@ -18,26 +23,25 @@ import { SimulationRuns } from "./pages/SimulationRuns";
 import { Review } from "./pages/Review";
 import { Upload } from "./pages/Upload";
 import { VendorAudit } from "./pages/VendorAudit";
+import { VendorAuditDetailPage } from "./pages/VendorAuditDetailPage";
+import { VendorDetailPage } from "./pages/VendorDetailPage";
 
-// Upload ("/upload") is the header's gradient call-to-action rather than a nav item.
 // Onboarding isn't in the nav: it's shown automatically, once, before
 // anything else (see RequireAuth), and never again after it's done.
-const NAV_LINKS = [
-  { to: "/", label: "Home" },
-  { to: "/findings", label: "Findings" },
-  { to: "/review", label: "Review" },
-  { to: "/report", label: "Report" },
-  { to: "/org-checklist", label: "Checklist" },
-  { to: "/audit-simulation", label: "Audit" },
-  { to: "/vendor-audit", label: "Vendor Audit" },
-];
+// Log out lives in the AccountMenu on the right, away from these links.
+// Sections and their sub-tabs are defined in navigation.ts.
+
+const linkStyle = (active: boolean) =>
+  active ? { background: "var(--tint-blue)", color: "var(--brand-blue-text)" } : { color: "#4b5563" };
 
 function AppShell() {
-  const { logout } = useAuth();
   const { status } = useOnboarding();
+  const { pathname } = useLocation();
   // Until onboarding is done, the only thing to do is onboarding, so the
-  // header shows just the logo and Log out.
+  // header shows just the logo and the account menu.
   const showAppNav = status?.completed === true;
+  const section = NAV_SECTIONS.find((s) => pathMatches(pathname, s.match));
+  const tab = section ? activeTab(section, pathname) : undefined;
 
   return (
     <div className="min-h-screen">
@@ -51,40 +55,51 @@ function AppShell() {
             <Logo />
           </Link>
           {showAppNav && (
-          <nav className="order-last -mx-1 flex w-full gap-1 overflow-x-auto text-sm lg:order-none lg:mx-0 lg:w-auto">
-            {NAV_LINKS.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.to === "/"}
-                className="shrink-0 rounded-lg px-3 py-2 font-medium transition-colors hover:bg-slate-100"
-                style={({ isActive }) =>
-                  isActive
-                    ? { background: "var(--tint-blue)", color: "var(--brand-blue-text)" }
-                    : { color: "#4b5563" }
-                }
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
-          )}
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={logout}
-              className="text-sm font-medium hover:underline"
-              style={{ color: "#4b5563" }}
+            <nav
+              aria-label="Main"
+              className="order-last -mx-1 flex w-full gap-1 overflow-x-auto text-sm lg:order-none lg:mx-0 lg:w-auto"
             >
-              Log out
-            </button>
-            {showAppNav && (
-              <NavLink to="/upload" className="btn-primary px-4 py-2 text-sm">
-                Upload document
-              </NavLink>
-            )}
-          </div>
+              {NAV_SECTIONS.map((s) => {
+                const active = s.key === section?.key;
+                return (
+                  <Link
+                    key={s.key}
+                    to={s.to}
+                    aria-current={active ? "page" : undefined}
+                    className="shrink-0 rounded-lg px-3 py-2 font-medium transition-colors hover:bg-slate-100"
+                    style={linkStyle(active)}
+                  >
+                    {s.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
+          <AccountMenu />
         </div>
+        {showAppNav && section && section.tabs.length > 0 && (
+          <div className="border-t" style={{ borderColor: "var(--glass-border)" }}>
+            <nav aria-label={section.label} className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 text-sm">
+              {section.tabs.map((t) => {
+                const active = t === tab;
+                return (
+                  <Link
+                    key={t.to}
+                    to={t.to}
+                    aria-current={active ? "page" : undefined}
+                    className="shrink-0 border-b-2 px-3 py-2.5 font-medium transition-colors"
+                    style={{
+                      borderColor: active ? "var(--brand-blue)" : "transparent",
+                      color: active ? "var(--brand-blue-text)" : "#4b5563",
+                    }}
+                  >
+                    {t.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        )}
       </header>
       <main className="px-4 pt-10 pb-20">
         <Routes>
@@ -109,6 +124,30 @@ function AppShell() {
             element={
               <RequireAuth>
                 <Upload />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/audit-simulation/new"
+            element={
+              <RequireAuth>
+                <NewAudit />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/audit-simulation/runs/:runId/edit"
+            element={
+              <RequireAuth>
+                <NewAudit />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/audit-simulation/reports"
+            element={
+              <RequireAuth>
+                <AuditReports />
               </RequireAuth>
             }
           />
@@ -169,10 +208,26 @@ function AppShell() {
             }
           />
           <Route
+            path="/company"
+            element={
+              <RequireAuth>
+                <CompanyProfile />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/org-checklist"
             element={
               <RequireAuth>
                 <OrgChecklist />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/org-checklist/:department"
+            element={
+              <RequireAuth>
+                <DepartmentChecklist />
               </RequireAuth>
             }
           />
@@ -189,6 +244,22 @@ function AppShell() {
             element={
               <RequireAuth>
                 <VendorAudit />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/vendor-audit/vendors/:vendorId"
+            element={
+              <RequireAuth>
+                <VendorDetailPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/vendor-audit/audits/:auditId"
+            element={
+              <RequireAuth>
+                <VendorAuditDetailPage />
               </RequireAuth>
             }
           />

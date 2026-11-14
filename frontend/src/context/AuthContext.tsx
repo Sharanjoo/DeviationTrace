@@ -15,7 +15,7 @@ interface AuthContextValue {
   orgId: string | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (orgName: string, industry: string, email: string, password: string) => Promise<void>;
+  register: (orgName: string, industry: string, email: string, password: string, fullName?: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -37,12 +37,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
     applyAuth(auth);
   };
 
-  const register = async (orgName: string, industry: string, email: string, password: string) => {
+  const register = async (orgName: string, industry: string, email: string, password: string, fullName?: string) => {
     const auth = await api.post<AuthResponse>("/auth/register", {
       org_name: orgName,
       industry,
       email,
       password,
+      full_name: fullName || null,
     });
     applyAuth(auth);
   };

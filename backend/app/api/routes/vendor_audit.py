@@ -92,6 +92,16 @@ def run_vendor_audit(
             detail="document must be processed (POST /documents/{id}/process) before running the vendor-audit cross-check",
         )
 
+    counts = cross_check_document(db, document)
+    db.commit()
+    return VendorAuditRunResult(**counts)
+
+
+def cross_check_document(db: Session, document: Document) -> dict[str, int]:
+    """Check a processed vendor audit report against every VendorStandard for
+    its vendor_category and upsert the findings in place. The caller holds
+    the document row lock and commits. Shared by POST /vendor-audit/{id}/run
+    and the vendor audit flow in vendors.py."""
     sections = (
         db.query(DocumentSection)
         .filter(DocumentSection.document_id == document.id)
@@ -106,9 +116,7 @@ def run_vendor_audit(
     counts = {"missing": 0, "partial": 0, "satisfied": 0}
     for data in results:
         counts[data.status] += 1
-
-    db.commit()
-    return VendorAuditRunResult(**counts)
+    return counts
 
 
 @router.get("/findings", response_model=list[VendorAuditFindingOut])

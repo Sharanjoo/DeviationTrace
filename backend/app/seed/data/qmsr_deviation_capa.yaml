@@ -10,6 +10,7 @@
 regulation: qmsr
 clauses:
   - clause_number: "8.3.1"
+    title: "Control of nonconforming product"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation]
     expected_heading: "Description"
@@ -24,6 +25,7 @@ clauses:
       product, and must define responsibility for review and disposition.
 
   - clause_number: "8.3.2"
+    title: "Evaluating nonconformances and deciding on investigation"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation]
     expected_heading: "Investigation"
@@ -38,6 +40,7 @@ clauses:
       must be documented.
 
   - clause_number: "8.5.2"
+    title: "Corrective and preventive action (CAPA) procedure"
     process_area: capa
     document_type_applicability: [sop, deviation, batch_record]
     expected_heading: "Corrective Action (CAPA)"
@@ -52,6 +55,7 @@ clauses:
       to identify existing and potential causes of nonconforming product.
 
   - clause_number: "8.5.2(b)"
+    title: "Investigating the cause of nonconformities"
     process_area: capa
     document_type_applicability: [sop, deviation]
     expected_heading: "Root Cause"
@@ -64,6 +68,7 @@ clauses:
       significance and risk of the nonconformity.
 
   - clause_number: "8.5.2(e)"
+    title: "Actions to correct and prevent recurrence, verified as effective"
     process_area: capa
     document_type_applicability: [sop, deviation]
     expected_heading: "Corrective Action (CAPA)"
@@ -78,6 +83,7 @@ clauses:
       adversely affect the finished device.
 
   - clause_number: "5.6.2"
+    title: "Sharing quality problems and CAPA with those responsible"
     process_area: capa
     document_type_applicability: [sop, deviation]
     expected_heading: "Closure"
@@ -91,6 +97,7 @@ clauses:
       and submitted for management review.
 
   - clause_number: "8.2.2"
+    title: "Complaint handling"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation]
     expected_heading: "Description"

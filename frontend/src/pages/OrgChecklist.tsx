@@ -1,52 +1,35 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { CompanyProfile } from "../components/CompanyProfile";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { GlassPanel } from "../components/GlassPanel";
 import { api, ApiError } from "../api/client";
+import { CHECKLIST_DEPARTMENTS, type EffectiveChecklistItem } from "../checklistDepartments";
 import { useOnboarding } from "../context/OnboardingContext";
-import { DEPARTMENT_LABELS, VENDOR_CATEGORIES_BY_DEPARTMENT, VENDOR_CATEGORY_LABELS } from "../departmentVendorMap";
 
-interface EffectiveChecklistItem {
-  id: string;
-  department: string;
-  item_name: string;
-  citation: string;
-  requirement_text: string;
-  match_phrases: string[];
-  is_custom: boolean;
-  is_excluded: boolean;
-}
+const muted = { color: "var(--text-muted)" };
 
-const DEPARTMENTS = ["qc", "qa", "utilities", "manufacturing", "engineering"];
-
-const EMPTY_FORM = { item_name: "", citation: "", requirement_text: "", match_phrases: "" };
-
+/** Department checklist overview: one box per department. Clicking a box
+ * opens that department's checklist items on their own page
+ * (/org-checklist/:department). */
 export function OrgChecklist() {
-  // Set when onboarding has just finished, for a one-time welcome note;
-  // cleared on leaving this page so it never shows again.
+  // Set when onboarding has just finished, for a one-time welcome note.
   // Captured once into local state, then cleared in the context so a later
   // visit doesn't show it (survives StrictMode's dev double-mount).
   const { justCompleted, clearJustCompleted } = useOnboarding();
   const [welcome] = useState(justCompleted);
   useEffect(() => clearJustCompleted(), [clearJustCompleted]);
+
+  const [searchParams] = useSearchParams();
   const [items, setItems] = useState<EffectiveChecklistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const [addingFor, setAddingFor] = useState<string | null>(null);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [submitting, setSubmitting] = useState(false);
 
-  const load = () => {
-    setLoading(true);
+  useEffect(() => {
     api
       .get<EffectiveChecklistItem[]>("/audit-simulation/checklist")
       .then(setItems)
       .catch((err) => setError(err instanceof ApiError ? err.message : "Failed to load checklist."))
       .finally(() => setLoading(false));
-  };
-
-  useEffect(load, []);
+  }, []);
 
   const byDepartment = useMemo(() => {
     const map = new Map<string, EffectiveChecklistItem[]>();
@@ -57,213 +40,97 @@ export function OrgChecklist() {
     return map;
   }, [items]);
 
-  const toggleExclusion = async (item: EffectiveChecklistItem) => {
-    setBusyId(item.id);
-    setError(null);
-    try {
-      if (item.is_excluded) {
-        await api.del(`/audit-simulation/checklist/${item.id}/exclude`);
-      } else {
-        await api.post(`/audit-simulation/checklist/${item.id}/exclude`);
-      }
-      load();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Update failed.");
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  const deleteCustomItem = async (id: string) => {
-    setBusyId(id);
-    setError(null);
-    try {
-      await api.del(`/audit-simulation/checklist/${id}`);
-      load();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Delete failed.");
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  const submitCustomItem = async (department: string) => {
-    if (!form.item_name.trim() || !form.citation.trim() || !form.requirement_text.trim()) {
-      setError("Item name, citation, and requirement text are required.");
-      return;
-    }
-    setSubmitting(true);
-    setError(null);
-    try {
-      await api.post("/audit-simulation/checklist", {
-        department,
-        item_name: form.item_name.trim(),
-        citation: form.citation.trim(),
-        requirement_text: form.requirement_text.trim(),
-        match_phrases: form.match_phrases
-          .split(",")
-          .map((p) => p.trim())
-          .filter(Boolean),
-      });
-      setForm(EMPTY_FORM);
-      setAddingFor(null);
-      load();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to add item.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  // Older links used ?dept=qa on this page; send them to the department page.
+  const legacyDept = searchParams.get("dept");
+  if (legacyDept && CHECKLIST_DEPARTMENTS.some((d) => d.value === legacyDept)) {
+    return <Navigate to={`/org-checklist/${legacyDept}`} replace />;
+  }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <h1 className="text-3xl font-bold">Your department checklist</h1>
-      <p style={{ color: "var(--text-muted)" }}>
-        This is the checklist Internal Audit Simulation actually runs against for your org. Turn off items that
-        don't apply to your site, and add your own — department by department.
-      </p>
+    <div className="mx-auto flex max-w-6xl flex-col gap-6">
+      <div>
+        <p className="eyebrow">Internal audit</p>
+        <h1 className="mt-2 text-3xl font-bold">Department checklist</h1>
+        <p className="mt-2 max-w-3xl" style={muted}>
+          The required records the internal audit simulation checks for. Open a department to turn off items that
+          don't apply to your site, or add your own.
+        </p>
+      </div>
 
       {welcome && (
         <GlassPanel className="!p-5">
           <p className="font-semibold">You're all set.</p>
-          <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+          <p className="mt-1 text-sm" style={muted}>
             {welcome.itemsAdded
               ? `Added ${welcome.itemsAdded} item${welcome.itemsAdded === 1 ? "" : "s"} from your template to this checklist. `
               : "You're starting from the standard checklist. "}
-            Next, upload your department reports and run the{" "}
-            <Link to="/audit-simulation" className="underline">
-              internal audit simulation
+            Next,{" "}
+            <Link to="/audit-simulation/new" className="underline">
+              start an internal audit simulation
             </Link>
             .
           </p>
         </GlassPanel>
       )}
 
-      <CompanyProfile />
-
-      {loading && <p style={{ color: "var(--text-muted)" }}>Loading your checklist...</p>}
       {error && <p style={{ color: "var(--severity-critical)" }}>{error}</p>}
 
-      {DEPARTMENTS.map((department) => {
-        const rows = byDepartment.get(department) ?? [];
-        const vendorCategories = VENDOR_CATEGORIES_BY_DEPARTMENT[department] ?? [];
-        return (
-          <div key={department} className="flex flex-col gap-2">
-            <div className="flex items-end justify-between gap-4">
-              <h2 className="text-lg font-semibold">{DEPARTMENT_LABELS[department]}</h2>
-              <button
-                type="button"
-                onClick={() => {
-                  setAddingFor(addingFor === department ? null : department);
-                  setForm(EMPTY_FORM);
-                }}
-                className="rounded-lg border px-3 py-1 text-xs font-medium"
-                style={{ borderColor: "var(--glass-border)", background: "var(--surface-bg)", color: "var(--surface-text)" }}
-              >
-                {addingFor === department ? "Cancel" : "Add item"}
-              </button>
-            </div>
-
-            {vendorCategories.length > 0 && (
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                Also audits vendors:{" "}
-                {vendorCategories.map((cat, i) => (
-                  <span key={cat}>
-                    <Link to={`/vendor-audit?department=${department}`} className="underline">
-                      {VENDOR_CATEGORY_LABELS[cat] ?? cat}
-                    </Link>
-                    {i < vendorCategories.length - 1 ? ", " : ""}
-                  </span>
-                ))}
-              </p>
-            )}
-
-            {addingFor === department && (
-              <GlassPanel className="flex flex-col gap-2">
-                <input
-                  className="rounded-lg border px-3 py-2 text-sm"
-                  style={{ borderColor: "var(--glass-border)" }}
-                  placeholder="Item name"
-                  value={form.item_name}
-                  onChange={(e) => setForm({ ...form, item_name: e.target.value })}
-                />
-                <input
-                  className="rounded-lg border px-3 py-2 text-sm"
-                  style={{ borderColor: "var(--glass-border)" }}
-                  placeholder="Citation (e.g. Company SOP-XX-001)"
-                  value={form.citation}
-                  onChange={(e) => setForm({ ...form, citation: e.target.value })}
-                />
-                <textarea
-                  className="rounded-lg border px-3 py-2 text-sm"
-                  style={{ borderColor: "var(--glass-border)" }}
-                  placeholder="Requirement text"
-                  rows={2}
-                  value={form.requirement_text}
-                  onChange={(e) => setForm({ ...form, requirement_text: e.target.value })}
-                />
-                <input
-                  className="rounded-lg border px-3 py-2 text-sm"
-                  style={{ borderColor: "var(--glass-border)" }}
-                  placeholder="Match phrases, comma-separated (e.g. microbial limit test)"
-                  value={form.match_phrases}
-                  onChange={(e) => setForm({ ...form, match_phrases: e.target.value })}
-                />
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => submitCustomItem(department)}
-                  className="self-start btn-primary px-4 py-2 text-sm"
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {CHECKLIST_DEPARTMENTS.map((d) => {
+          const deptItems = byDepartment.get(d.value) ?? [];
+          const active = deptItems.filter((i) => !i.is_excluded).length;
+          const off = deptItems.filter((i) => i.is_excluded).length;
+          const custom = deptItems.filter((i) => i.is_custom).length;
+          return (
+            <Link
+              key={d.value}
+              to={`/org-checklist/${d.value}`}
+              className="card flex flex-col p-5 transition-shadow hover:shadow-md"
+            >
+              <div className="flex items-start gap-3">
+                <span
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                  style={{ background: d.tint }}
                 >
-                  {submitting ? "Adding..." : "Add to checklist"}
-                </button>
-              </GlassPanel>
-            )}
-
-            {rows.map((item) => (
-              <GlassPanel
-                key={item.id}
-                className={`flex items-start justify-between gap-4 ${item.is_excluded ? "opacity-50" : ""}`}
-              >
-                <div>
-                  <div className="text-xs" style={{ color: "var(--text-muted)" }}>
-                    {item.citation}
-                    {item.is_custom && <span className="ml-2 font-semibold">CUSTOM</span>}
-                    {item.is_excluded && <span className="ml-2 font-semibold">EXCLUDED</span>}
-                  </div>
-                  <div className="mt-1 font-medium">{item.item_name}</div>
-                  <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-                    {item.requirement_text}
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={d.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d={d.icon} />
+                  </svg>
+                </span>
+                <div className="min-w-0">
+                  {d.label !== d.name && (
+                    <p className="text-xs font-semibold" style={muted}>
+                      {d.label}
+                    </p>
+                  )}
+                  <h2 className="text-lg font-semibold">{d.name}</h2>
+                  <p className="mt-0.5 text-sm" style={muted}>
+                    {d.blurb}
                   </p>
                 </div>
-                <div className="flex shrink-0 flex-col gap-2">
-                  {item.is_custom ? (
-                    <button
-                      type="button"
-                      disabled={busyId === item.id}
-                      onClick={() => deleteCustomItem(item.id)}
-                      className="rounded-lg border px-3 py-1 text-xs"
-                      style={{ borderColor: "var(--glass-border)" }}
-                    >
-                      Delete
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={busyId === item.id}
-                      onClick={() => toggleExclusion(item)}
-                      className="rounded-lg border px-3 py-1 text-xs"
-                      style={{ borderColor: "var(--glass-border)" }}
-                    >
-                      {item.is_excluded ? "Include" : "Exclude"}
-                    </button>
-                  )}
-                </div>
-              </GlassPanel>
-            ))}
-          </div>
-        );
-      })}
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-3 border-t pt-4" style={{ borderColor: "var(--glass-border)" }}>
+                <TileStat label="Active" value={loading ? "–" : active} />
+                <TileStat label="Off" value={loading ? "–" : off} />
+                <TileStat label="Custom" value={loading ? "–" : custom} />
+              </div>
+              <span className="mt-4 text-sm font-medium" style={{ color: "var(--brand-blue-text)" }}>
+                Open checklist →
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function TileStat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div>
+      <p className="text-xs" style={muted}>
+        {label}
+      </p>
+      <p className="text-xl font-bold">{value}</p>
     </div>
   );
 }

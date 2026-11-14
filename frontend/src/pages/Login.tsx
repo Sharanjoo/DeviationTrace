@@ -37,6 +37,7 @@ export function Login() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [orgName, setOrgName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [industry, setIndustry] = useState("device");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,7 +52,7 @@ export function Login() {
       if (mode === "login") {
         await login(email, password);
       } else {
-        await register(orgName, industry, email, password);
+        await register(orgName, industry, email, password, fullName);
       }
       navigate("/");
     } catch (err) {
@@ -139,6 +140,17 @@ export function Login() {
                     style={INPUT_STYLE}
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
+                    required
+                  />
+                </label>
+                <label className="text-sm font-medium">
+                  Your name
+                  <input
+                    className={INPUT_CLASS}
+                    style={INPUT_STYLE}
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    autoComplete="name"
                     required
                   />
                 </label>

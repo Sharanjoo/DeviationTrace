@@ -36,6 +36,7 @@ def load_clauses() -> None:
                     .first()
                 )
                 fields = {
+                    "title": entry.get("title"),
                     "requirement_text": entry["requirement_text"].strip(),
                     "process_area": entry["process_area"],
                     "document_type_applicability": entry["document_type_applicability"],

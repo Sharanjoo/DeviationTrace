@@ -1,237 +1,404 @@
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api, ApiError } from "../api/client";
-import {
-  CheckHeader,
-  EmptyState,
-  FilterChips,
-  GroupCard,
-  ResultRow,
-  StatCards,
-  type StatusDef,
-} from "../components/CheckResults";
-import { countBy } from "../countBy";
+import { CheckHeader, EmptyState, ProgressBar, type StatusDef } from "../components/CheckResults";
 import { DEPARTMENT_LABELS, VENDOR_CATEGORIES_BY_DEPARTMENT, VENDOR_CATEGORY_LABELS } from "../departmentVendorMap";
-
-interface VendorDocumentOut {
-  id: string;
-  title: string;
-  vendor_category: string | null;
-  status: string;
-  processing_error: string | null;
-}
-
-interface VendorAuditFindingOut {
-  id: string;
-  document: { id: string; title: string };
-  standard: { vendor_category: string; requirement_name: string; citation: string };
-  status: "missing" | "partial" | "satisfied";
-  severity: "critical" | "major" | "resolved";
-  explanation: string;
-}
+import {
+  displayFileName,
+  standardsMet,
+  vendorAuditDate,
+  vendorCounts,
+  type UnassignedReport,
+  type Vendor,
+  type VendorAuditDetail,
+  type VendorDetail,
+} from "../vendors";
 
 const STATUSES: StatusDef[] = [
   { value: "missing", label: "Missing", tone: "bad" },
   { value: "partial", label: "Partial", tone: "warn" },
   { value: "satisfied", label: "Satisfied", tone: "good" },
 ];
-const STATUS_BY_VALUE = Object.fromEntries(STATUSES.map((s) => [s.value, s]));
+const INPUT = "mt-1.5 w-full rounded-lg border px-3 py-2 text-sm";
+const INPUT_STYLE = { borderColor: "var(--glass-border)", color: "var(--text)" };
+const muted = { color: "var(--text-muted)" };
+const EMPTY_VENDOR = { name: "", vendor_category: "raw_material_supplier", contact_name: "", contact_email: "", notes: "" };
 
-/** "VEN-RM-2026-008_Acme_Excipient_Supplier_Audit_Report.docx" →
- * "VEN-RM-2026-008 Acme Excipient Supplier Audit Report" */
-function displayTitle(filename: string): string {
-  return filename.replace(/\.(docx|pdf|txt)$/i, "").replace(/_/g, " ");
-}
-
+/** Vendor audit home: the org's vendors, each with its latest audit. Open a
+ * vendor to see its audit history or start a new audit. */
 export function VendorAudit() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const departmentFilter = searchParams.get("department");
+  const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const departmentFilter = params.get("department");
+  const categoryFilter = params.get("category") ?? "";
+  const q = params.get("q") ?? "";
 
-  const [documents, setDocuments] = useState<VendorDocumentOut[]>([]);
-  const [findings, setFindings] = useState<VendorAuditFindingOut[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [unassigned, setUnassigned] = useState<UnassignedReport[]>([]);
   const [loading, setLoading] = useState(true);
-  const [runningId, setRunningId] = useState<string | null>(null);
-  const [vendorCategoryFilter, setVendorCategoryFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-
-  const loadAll = () => {
-    setLoading(true);
-    return Promise.all([
-      api.get<VendorDocumentOut[]>("/documents?type=vendor_audit_report"),
-      api.get<VendorAuditFindingOut[]>("/vendor-audit/findings"),
-    ])
-      .then(([docs, foundFindings]) => {
-        setDocuments(docs);
-        setFindings(foundFindings);
-      })
-      .catch((err) => setError(err instanceof ApiError ? err.message : "Failed to load vendor audit data."))
-      .finally(() => setLoading(false));
-  };
+  const [error, setError] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [form, setForm] = useState(EMPTY_VENDOR);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    loadAll();
+    Promise.all([api.get<Vendor[]>("/vendors"), api.get<UnassignedReport[]>("/vendors/unassigned-reports")])
+      .then(([v, u]) => {
+        setVendors(v);
+        setUnassigned(u);
+      })
+      .catch((err) => setError(err instanceof ApiError ? err.message : "Failed to load vendors."))
+      .finally(() => setLoading(false));
   }, []);
 
-  const handleRun = async (documentId: string) => {
-    setRunningId(documentId);
+  const setParam = (key: string, value: string) => {
+    const next = new URLSearchParams(params);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    setParams(next, { replace: true });
+  };
+
+  // A ?department= link (from a department checklist page) narrows to the
+  // vendor categories that department audits.
+  const allowedCategories = departmentFilter ? VENDOR_CATEGORIES_BY_DEPARTMENT[departmentFilter] ?? [] : null;
+  const needle = q.trim().toLowerCase();
+  const visible = vendors.filter(
+    (v) =>
+      (!allowedCategories || allowedCategories.includes(v.vendor_category)) &&
+      (!categoryFilter || v.vendor_category === categoryFilter) &&
+      (!needle || [v.name, v.contact_name].join(" ").toLowerCase().includes(needle)),
+  );
+  const categoryOptions = (allowedCategories ?? Object.keys(VENDOR_CATEGORY_LABELS)).filter((c) =>
+    vendors.some((v) => v.vendor_category === c),
+  );
+
+  const handleCreate = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
     setError(null);
     try {
-      await api.post(`/vendor-audit/${documentId}/run`);
-      await loadAll();
+      const vendor = await api.post<VendorDetail>("/vendors", form);
+      navigate(`/vendor-audit/vendors/${vendor.id}`);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Run failed.");
-    } finally {
-      setRunningId(null);
+      setError(err instanceof ApiError ? readable(err.message) : "Failed to add vendor.");
+      setSaving(false);
     }
   };
 
-  // A ?department= link (from the Checklist page) narrows to the vendor
-  // categories that department owns.
-  const allowedCategories = useMemo(
-    () => (departmentFilter ? VENDOR_CATEGORIES_BY_DEPARTMENT[departmentFilter] ?? [] : null),
-    [departmentFilter],
-  );
-  const inScopeDocuments = useMemo(
-    () => documents.filter((d) => !allowedCategories || (d.vendor_category && allowedCategories.includes(d.vendor_category))),
-    [documents, allowedCategories],
-  );
-  const visibleDocuments = useMemo(
-    () => inScopeDocuments.filter((d) => !vendorCategoryFilter || d.vendor_category === vendorCategoryFilter),
-    [inScopeDocuments, vendorCategoryFilter],
-  );
-
-  const findingsByDocument = useMemo(() => {
-    const map = new Map<string, VendorAuditFindingOut[]>();
-    for (const f of findings) {
-      if (!map.has(f.document.id)) map.set(f.document.id, []);
-      map.get(f.document.id)!.push(f);
-    }
-    return map;
-  }, [findings]);
-
-  // Stats cover the visible documents; the status filter only narrows rows.
-  const visibleFindings = useMemo(
-    () => visibleDocuments.flatMap((d) => findingsByDocument.get(d.id) ?? []),
-    [visibleDocuments, findingsByDocument],
-  );
-  const counts = useMemo(() => countBy(visibleFindings, (f) => f.status), [visibleFindings]);
-  const categoryCounts = countBy(inScopeDocuments, (d) => d.vendor_category ?? "");
-  const reportsRun = visibleDocuments.filter((d) => findingsByDocument.has(d.id)).length;
-
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6">
+    <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <CheckHeader
         eyebrow="Verification check"
         title="Vendor audit cross-check"
-        description="Reads each supplier's audit report and checks it against the standards for that vendor category, so you can see what the vendor actually demonstrated, not just that a report exists."
-        meta={
-          visibleDocuments.length > 0
-            ? `${reportsRun} of ${visibleDocuments.length} report${visibleDocuments.length === 1 ? "" : "s"} cross-checked`
-            : undefined
+        description="Your vendors, each with its audit history. Open a vendor to review previous audits or start a new one; each audit's report is checked against the standards for that vendor's category."
+        action={
+          !adding && (
+            <button type="button" onClick={() => setAdding(true)} className="btn-primary px-5 py-2.5 text-sm">
+              Add vendor
+            </button>
+          )
         }
       />
+
+      {error && <p style={{ color: "var(--severity-critical)" }}>{error}</p>}
+
+      {adding && (
+        <form onSubmit={handleCreate} className="card p-6">
+          <h2 className="text-lg font-semibold">Add a vendor</h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <label className="text-sm font-medium">
+              Vendor name <span style={{ color: "var(--severity-critical)" }}>*</span>
+              <input
+                className={INPUT}
+                style={INPUT_STYLE}
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="e.g. Acme Excipient Supplier"
+                required
+                maxLength={255}
+              />
+            </label>
+            <label className="text-sm font-medium">
+              Vendor category <span style={{ color: "var(--severity-critical)" }}>*</span>
+              <select
+                className={INPUT}
+                style={INPUT_STYLE}
+                value={form.vendor_category}
+                onChange={(e) => setForm({ ...form, vendor_category: e.target.value })}
+              >
+                {Object.entries(VENDOR_CATEGORY_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm font-medium">
+              Vendor contact
+              <input
+                className={INPUT}
+                style={INPUT_STYLE}
+                value={form.contact_name}
+                onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
+                placeholder="Name at the vendor"
+              />
+            </label>
+            <label className="text-sm font-medium">
+              Contact email
+              <input
+                type="email"
+                className={INPUT}
+                style={INPUT_STYLE}
+                value={form.contact_email}
+                onChange={(e) => setForm({ ...form, contact_email: e.target.value })}
+              />
+            </label>
+          </div>
+          <div className="mt-5 flex gap-2">
+            <button type="submit" disabled={saving} className="btn-primary px-4 py-2 text-sm">
+              {saving ? "Adding..." : "Add vendor"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAdding(false);
+                setForm(EMPTY_VENDOR);
+              }}
+              className="btn-secondary px-4 py-2 text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
 
       {departmentFilter && (
         <div className="card flex items-center justify-between gap-4 px-5 py-3 text-sm">
           <p>
-            Showing vendors owned by <strong>{DEPARTMENT_LABELS[departmentFilter] ?? departmentFilter}</strong>
+            Showing vendors audited by <strong>{DEPARTMENT_LABELS[departmentFilter] ?? departmentFilter}</strong>
           </p>
-          <button type="button" onClick={() => setSearchParams({})} className="btn-secondary px-3 py-1.5 text-xs">
-            Show all departments
+          <button type="button" onClick={() => setParam("department", "")} className="btn-secondary px-3 py-1.5 text-xs">
+            Show all
           </button>
         </div>
       )}
 
-      {error && <p style={{ color: "var(--severity-critical)" }}>{error}</p>}
-      {loading && documents.length === 0 && <p style={{ color: "var(--text-muted)" }}>Loading vendor audit reports...</p>}
+      {loading && <p style={muted}>Loading vendors...</p>}
 
-      {!loading && inScopeDocuments.length === 0 && (
+      {!loading && vendors.length === 0 && !adding && (
         <EmptyState
-          title="No vendor audit reports yet"
-          body="Upload a supplier's audit report as type “Vendor audit report” and pick its vendor category. It will appear here, ready to cross-check."
-          actionLabel="Upload a report"
-          actionTo="/upload"
+          title="No vendors yet"
+          body="Add a vendor, then start an audit for it by uploading the vendor's audit report. Each audit is kept in the vendor's history with an ID like VA-0001."
+          actionLabel="Add vendor"
+          onAction={() => setAdding(true)}
         />
       )}
 
-      {inScopeDocuments.length > 0 && (
+      {vendors.length > 0 && (
         <>
-          {visibleFindings.length > 0 && (
-            <StatCards scoreLabel="Vendor standards met" statuses={STATUSES} counts={counts} active={statusFilter} onSelect={setStatusFilter} />
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              className="w-full max-w-xs rounded-lg border px-3 py-2 text-sm"
+              style={INPUT_STYLE}
+              value={q}
+              onChange={(e) => setParam("q", e.target.value)}
+              placeholder="Search vendors..."
+            />
+            <div className="flex flex-wrap gap-2">
+              {["", ...categoryOptions].map((c) => {
+                const on = categoryFilter === c;
+                return (
+                  <button
+                    key={c || "all"}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setParam("category", c)}
+                    className="rounded-full border px-3.5 py-1.5 text-sm font-medium"
+                    style={
+                      on
+                        ? { background: "var(--tint-blue)", borderColor: "var(--brand-blue)", color: "var(--brand-blue-text)" }
+                        : { background: "#fff", borderColor: "var(--glass-border)", color: "#4b5563" }
+                    }
+                  >
+                    {c ? VENDOR_CATEGORY_LABELS[c] : "All categories"}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {visible.length === 0 && (
+            <div className="card p-6 text-sm" style={muted}>
+              No vendors match.
+            </div>
           )}
 
-          <FilterChips
-            allLabel="All vendor categories"
-            value={vendorCategoryFilter}
-            onChange={setVendorCategoryFilter}
-            options={Object.keys(VENDOR_CATEGORY_LABELS)
-              .filter((c) => categoryCounts[c])
-              .map((c) => ({ value: c, label: VENDOR_CATEGORY_LABELS[c], count: categoryCounts[c] }))}
-          />
-
-          {visibleDocuments.map((document) => {
-            const all = findingsByDocument.get(document.id) ?? [];
-            const shown = all.filter((f) => !statusFilter || f.status === statusFilter);
-            const isProcessed = document.status === "processed";
-            const hasRun = all.length > 0;
-            const isRunning = runningId === document.id;
-
-            // With a status filter on, hide reports that have nothing to show for it.
-            if (statusFilter && hasRun && shown.length === 0) return null;
-
-            return (
-              <GroupCard
-                key={document.id}
-                title={displayTitle(document.title)}
-                badge={
-                  document.vendor_category && (
-                    <span
-                      className="rounded-full px-2.5 py-0.5 text-xs font-medium"
-                      style={{ background: "var(--tint-violet)", color: "#6d28d9" }}
-                    >
-                      {VENDOR_CATEGORY_LABELS[document.vendor_category] ?? document.vendor_category}
-                    </span>
-                  )
-                }
-                subtitle={
-                  !isProcessed
-                    ? document.status === "failed"
-                      ? `Processing failed: ${document.processing_error}`
-                      : `Waiting to be processed (${document.status})`
-                    : hasRun
-                      ? `${all.length} standard${all.length === 1 ? "" : "s"} checked`
-                      : "Not cross-checked yet"
-                }
-                statuses={STATUSES}
-                counts={countBy(all, (f) => f.status)}
-                action={
-                  isProcessed && (
-                    <button
-                      type="button"
-                      onClick={() => handleRun(document.id)}
-                      disabled={isRunning}
-                      className={`${hasRun ? "btn-secondary" : "btn-primary"} px-4 py-2 text-sm`}
-                    >
-                      {isRunning ? "Running..." : hasRun ? "Run again" : "Run cross-check"}
-                    </button>
-                  )
-                }
-              >
-                {shown.map((f) => (
-                  <ResultRow
-                    key={f.id}
-                    status={STATUS_BY_VALUE[f.status]}
-                    title={f.standard.requirement_name}
-                    citation={f.standard.citation}
-                    explanation={f.explanation}
-                  />
-                ))}
-              </GroupCard>
-            );
-          })}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {visible.map((v) => {
+              const latest = v.latest_audit;
+              const score = latest ? standardsMet(latest) : null;
+              return (
+                <Link key={v.id} to={`/vendor-audit/vendors/${v.id}`} className="card flex flex-col p-5 transition-shadow hover:shadow-md">
+                  <span className="w-fit rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ background: "var(--tint-violet)", color: "#6d28d9" }}>
+                    {VENDOR_CATEGORY_LABELS[v.vendor_category] ?? v.vendor_category}
+                  </span>
+                  <h2 className="mt-2 text-lg font-semibold [overflow-wrap:anywhere]">{v.name}</h2>
+                  <p className="text-xs" style={muted}>
+                    {v.audit_count} audit{v.audit_count === 1 ? "" : "s"}
+                    {v.contact_name && ` · Contact: ${v.contact_name}`}
+                  </p>
+                  <div className="mt-4 flex-1 border-t pt-4" style={{ borderColor: "var(--glass-border)" }}>
+                    {latest ? (
+                      <>
+                        <div className="flex items-end justify-between gap-3">
+                          <div>
+                            <p className="text-xs" style={muted}>
+                              Latest audit
+                            </p>
+                            <p className="text-sm font-semibold">
+                              {latest.audit_code} · {vendorAuditDate(latest)}
+                            </p>
+                          </div>
+                          <p className="text-2xl font-bold text-gradient">{score === null ? "—" : `${score}%`}</p>
+                        </div>
+                        <ProgressBar statuses={STATUSES} counts={vendorCounts(latest)} className="mt-3" />
+                      </>
+                    ) : (
+                      <p className="text-sm" style={muted}>
+                        No audits yet.
+                      </p>
+                    )}
+                  </div>
+                  <span className="mt-4 text-sm font-medium" style={{ color: "var(--brand-blue-text)" }}>
+                    Open vendor →
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         </>
+      )}
+
+      {unassigned.length > 0 && (
+        <UnassignedReports reports={unassigned} vendors={vendors} onAssigned={(auditId) => navigate(`/vendor-audit/audits/${auditId}`)} />
       )}
     </div>
   );
+}
+
+function UnassignedReports({
+  reports,
+  vendors,
+  onAssigned,
+}: {
+  reports: UnassignedReport[];
+  vendors: Vendor[];
+  onAssigned: (auditId: string) => void;
+}) {
+  const [choice, setChoice] = useState<Record<string, string>>({});
+  // When each audit actually happened; defaults to the report's upload day.
+  const [dates, setDates] = useState<Record<string, string>>({});
+  const dateFor = (r: UnassignedReport) => dates[r.id] ?? localDay(r.uploaded_at);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const assign = async (report: UnassignedReport) => {
+    const vendorId = choice[report.id];
+    if (!vendorId) return;
+    setBusyId(report.id);
+    setError(null);
+    try {
+      const audit = await api.post<VendorAuditDetail>(`/vendors/${vendorId}/assign-report`, {
+        document_id: report.id,
+        audit_date: dateFor(report) || null,
+      });
+      onAssigned(audit.id);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to attach report.");
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <section className="card overflow-hidden">
+      <header className="border-b px-5 py-4" style={{ borderColor: "var(--glass-border)" }}>
+        <h2 className="text-lg font-semibold">Unassigned reports ({reports.length})</h2>
+        <p className="text-sm" style={muted}>
+          Vendor audit reports uploaded before vendors existed. Attach each one to its vendor to add it to that vendor's
+          audit history.
+        </p>
+        {error && <p className="mt-2 text-sm" style={{ color: "var(--severity-critical)" }}>{error}</p>}
+      </header>
+      <ul className="divide-y" style={{ borderColor: "var(--glass-border)" }}>
+        {reports.map((r) => (
+          <li key={r.id} className="flex flex-wrap items-center gap-3 px-5 py-3" style={{ borderColor: "var(--glass-border)" }}>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium [overflow-wrap:anywhere]">{displayFileName(r.title)}</p>
+              <p className="text-xs" style={muted}>
+                {r.vendor_category ? VENDOR_CATEGORY_LABELS[r.vendor_category] : "No category"} · uploaded{" "}
+                {new Date(r.uploaded_at).toLocaleDateString()}
+              </p>
+            </div>
+            {vendors.length === 0 ? (
+              <span className="text-xs" style={muted}>
+                Add a vendor first
+              </span>
+            ) : (
+              <>
+                <select
+                  className="rounded-lg border px-3 py-2 text-sm"
+                  style={INPUT_STYLE}
+                  value={choice[r.id] ?? ""}
+                  onChange={(e) => setChoice({ ...choice, [r.id]: e.target.value })}
+                >
+                  <option value="">Choose vendor...</option>
+                  {vendors.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name}
+                    </option>
+                  ))}
+                </select>
+                <label className="flex items-center gap-2 text-xs" style={muted}>
+                  Audit date
+                  <input
+                    type="date"
+                    className="rounded-lg border px-2 py-1.5 text-sm"
+                    style={INPUT_STYLE}
+                    value={dateFor(r)}
+                    onChange={(e) => setDates({ ...dates, [r.id]: e.target.value })}
+                  />
+                </label>
+                <button
+                  type="button"
+                  disabled={!choice[r.id] || busyId === r.id}
+                  onClick={() => assign(r)}
+                  className="btn-primary px-3 py-2 text-xs"
+                >
+                  {busyId === r.id ? "Attaching..." : "Attach"}
+                </button>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** "YYYY-MM-DD" in the viewer's time zone. */
+function localDay(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** FastAPI error bodies are JSON; show their message plainly. */
+function readable(message: string): string {
+  try {
+    const body = JSON.parse(message);
+    if (typeof body.detail === "string") return body.detail;
+    if (Array.isArray(body.detail) && body.detail[0]?.msg) return body.detail[0].msg;
+  } catch {
+    // not JSON
+  }
+  return message;
 }

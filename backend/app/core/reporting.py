@@ -84,6 +84,13 @@ _DEPARTMENT_NAMES = {
     "manufacturing": "Manufacturing",
     "engineering": "Engineering",
 }
+_AUDIT_TYPE_LABELS = {
+    "internal_audit": "Internal audit (ISO 13485 8.2.4)",
+    "mock_fda_inspection": "Mock FDA inspection (QMSR)",
+    "certification_readiness": "Certification / surveillance readiness",
+    "customer_audit_prep": "Customer or partner audit preparation",
+    "for_cause": "For-cause audit",
+}
 _STATUS_COLORS = {"missing": (220, 38, 38), "incomplete": (217, 119, 6), "satisfied": (5, 150, 105)}
 
 _UNICODE_FALLBACKS = {
@@ -110,11 +117,38 @@ def generate_audit_run_pdf(org: Organization, run: AuditSimulationRun) -> bytes:
         pdf.set_font("Helvetica", style, size)
         pdf.multi_cell(0, height, _latin1(text), new_x="LMARGIN", new_y="NEXT")
 
+    ran_at = run.completed_at or run.created_at
     line("Internal Audit Simulation Report", size=18, style="B", height=10)
     line(f"{run.run_code}  |  {org.name}", size=12)
-    line(f"Run on {run.created_at.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}", size=10)
+    if run.title:
+        line(run.title, size=12, style="B")
+    line(f"Run on {ran_at.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}", size=10)
     line(f"Report generated {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}", size=10)
     pdf.ln(4)
+
+    if run.title:
+        line("Audit details", size=13, style="B", height=8)
+        lead = f"{run.lead_name} (Employee ID {run.lead_employee_id})"
+        if run.lead_title:
+            lead += f", {run.lead_title}"
+        if run.lead_email:
+            lead += f", {run.lead_email}"
+        details = [
+            ("Audit type", _AUDIT_TYPE_LABELS.get(run.audit_type, run.audit_type or "-")),
+            ("Planned audit date", run.planned_date.isoformat() if run.planned_date else "Not set"),
+            ("Lead auditor", lead),
+            ("Departments in scope", ", ".join(_DEPARTMENT_NAMES.get(d, d) for d in run.departments or []) or "All"),
+        ]
+        for contact in run.department_contacts or []:
+            who = contact.get("name") or "-"
+            if contact.get("employee_id"):
+                who += f" (Employee ID {contact['employee_id']})"
+            details.append((f"{_DEPARTMENT_NAMES.get(contact['department'], contact['department'])} owner", who))
+        if run.objective:
+            details.append(("Objective", run.objective))
+        for label, value in details:
+            line(f"{label}: {value}", size=10, height=6)
+        pdf.ln(4)
 
     readiness = round(run.satisfied / run.total * 100) if run.total else 0
     line(f"Audit readiness: {readiness}%  ({run.satisfied} of {run.total} required records satisfied)", size=13, style="B")
@@ -136,4 +170,52 @@ def generate_audit_run_pdf(org: Organization, run: AuditSimulationRun) -> bytes:
             line(f"Matched document: {item.matched_document_title}", size=9, height=5)
         pdf.ln(2)
 
+    _content_section(pdf, line, run)
     return bytes(pdf.output())
+
+
+_DECISION_LABELS = {"confirmed": "Confirmed gap", "false_positive": "False positive", "needs_sme": "Needs SME"}
+
+
+def _content_section(pdf: FPDF, line, run: AuditSimulationRun) -> None:
+    """SOP and deviation report content gaps, grouped by document, with each
+    gap's review decision."""
+    pdf.ln(4)
+    line("Content check: SOPs and deviation reports", size=15, style="B", height=9)
+    checked = run.content_documents_checked or 0
+    if checked == 0:
+        line("No SOPs or deviation reports were in scope for this audit.", size=10)
+        return
+    line(
+        f"{checked} document(s) checked. Open gaps: {run.content_critical} not addressed, "
+        f"{run.content_major} partly addressed. Not yet reviewed: {run.content_unreviewed}.",
+        size=10,
+    )
+    if not run.content_findings:
+        line("Every checked document addresses all of its requirements.", size=10)
+        return
+
+    current_document = None
+    for finding in run.content_findings:
+        if finding.document_title != current_document:
+            current_document = finding.document_title
+            pdf.ln(2)
+            kind = "SOP" if finding.document_type == "sop" else "Deviation report"
+            department = _DEPARTMENT_NAMES.get(finding.department, finding.department)
+            line(f"{current_document} ({kind}, {department})", size=12, style="B", height=7)
+        label = "NOT ADDRESSED" if finding.severity == "critical" else "PARTLY ADDRESSED"
+        color = _STATUS_COLORS["missing"] if finding.severity == "critical" else _STATUS_COLORS["incomplete"]
+        if finding.decision == "false_positive":
+            color = (100, 116, 139)
+        pdf.set_text_color(*color)
+        line(f"[{label}] {finding.requirement_title}", size=10, style="B", height=6)
+        pdf.set_text_color(0, 0, 0)
+        line(finding.citation, size=9, height=5)
+        line(f"Required: {' '.join(finding.requirement_text.split())}", size=9, height=5)
+        review = _DECISION_LABELS.get(finding.decision, "Not reviewed")
+        if finding.decision and finding.decided_by:
+            review += f" by {finding.decided_by}"
+        if finding.decision_note:
+            review += f" - {finding.decision_note}"
+        line(f"Review: {review}", size=9, height=5)
+        pdf.ln(2)

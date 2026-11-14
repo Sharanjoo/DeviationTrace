@@ -6,6 +6,7 @@
 regulation: cfr211
 clauses:
   - clause_number: "211.192"
+    title: "Thorough investigation of discrepancies and failures"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation, batch_record]
     expected_heading: "Investigation"
@@ -22,6 +23,7 @@ clauses:
       followup.
 
   - clause_number: "211.100(a)"
+    title: "Written production and process control procedures"
     process_area: capa
     document_type_applicability: [sop, batch_record]
     expected_heading: "Corrective Action (CAPA)"
@@ -35,6 +37,7 @@ clauses:
       and justified.
 
   - clause_number: "211.100(b)"
+    title: "Following procedures and recording deviations"
     process_area: capa
     document_type_applicability: [sop, deviation]
     expected_heading: "Corrective Action (CAPA)"
@@ -47,6 +50,7 @@ clauses:
       be recorded and justified.
 
   - clause_number: "211.22(a)"
+    title: "Quality unit approval of procedures"
     process_area: deviation_handling
     document_type_applicability: [sop]
     expected_heading: "Closure"
@@ -61,6 +65,7 @@ clauses:
       release.
 
   - clause_number: "211.198(a)"
+    title: "Written complaint handling procedure"
     process_area: deviation_handling
     document_type_applicability: [sop, deviation]
     expected_heading: "Investigation"
