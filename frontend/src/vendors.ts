@@ -1,3 +1,5 @@
+import type { DocumentationIssue } from "./simulationRuns";
+
 /** Shared types and helpers for vendors and vendor audits. */
 
 export interface VendorAuditSummary {
@@ -34,6 +36,7 @@ export interface VendorAuditFindingRow {
 
 export interface VendorAuditDetail extends VendorAuditSummary {
   findings: VendorAuditFindingRow[];
+  documentation_issues: DocumentationIssue[];
 }
 
 export interface Vendor {

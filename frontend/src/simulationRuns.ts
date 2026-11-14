@@ -66,6 +66,7 @@ export interface SimulationRunSummary {
   content_critical: number;
   content_major: number;
   content_unreviewed: number;
+  documentation_issue_count: number;
 }
 
 export type ReviewDecision = "confirmed" | "false_positive" | "needs_sme";
@@ -104,9 +105,24 @@ export interface SimulationRunItem {
   matched_document_title: string | null;
 }
 
+export interface DocumentationIssue {
+  id: string;
+  kind: "missing_signature" | "missing_stamp" | "missing_date" | "missing_entry" | "placeholder" | "scanned";
+  field: string;
+  context: string;
+  location: string | null;
+  confidence: "high" | "check";
+}
+
+export interface RunDocumentationIssue extends DocumentationIssue {
+  department: string;
+  document_title: string;
+}
+
 export interface SimulationRunDetail extends SimulationRunSummary {
   items: SimulationRunItem[];
   content_findings: ContentFinding[];
+  documentation_issues: RunDocumentationIssue[];
 }
 
 export function readiness(run: Pick<SimulationRunSummary, "satisfied" | "total">): number {

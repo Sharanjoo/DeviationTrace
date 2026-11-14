@@ -147,6 +147,7 @@ class AuditSimulationRunSummaryOut(BaseModel):
     content_critical: int
     content_major: int
     content_unreviewed: int
+    documentation_issue_count: int
 
 
 class AuditSimulationRunItemOut(BaseModel):
@@ -198,9 +199,26 @@ class ContentFindingReviewIn(BaseModel):
         return value
 
 
+class DocumentationIssueOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    kind: str
+    field: str
+    context: str
+    location: str | None
+    confidence: str
+
+
+class RunDocumentationIssueOut(DocumentationIssueOut):
+    department: str
+    document_title: str
+
+
 class AuditSimulationRunDetailOut(AuditSimulationRunSummaryOut):
     items: list[AuditSimulationRunItemOut]
     content_findings: list[ContentFindingOut]
+    documentation_issues: list[RunDocumentationIssueOut]
 
 
 class EffectiveChecklistItemOut(BaseModel):

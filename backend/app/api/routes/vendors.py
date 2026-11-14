@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 from app.api.routes.documents import ALLOWED_EXTENSIONS, process_document
 from app.api.routes.vendor_audit import cross_check_document
+from app.core.documentation.service import ensure_documentation_checked
 from app.core.security import CurrentOrg, get_current_org
 from app.core.storage import save_upload
 from app.database import get_db
@@ -33,6 +34,7 @@ from app.schemas.vendor import (
     VendorAuditSummaryOut,
     VendorAuditUpdate,
     VendorCreate,
+    VendorDocumentationIssueOut,
     VendorDetailOut,
     VendorOut,
 )
@@ -277,6 +279,8 @@ def get_vendor_audit(
     audit_id: uuid.UUID, current: CurrentOrg = Depends(get_current_org), db: Session = Depends(get_db)
 ) -> VendorAuditDetailOut:
     audit = _get_audit(db, current.org_id, audit_id)
+    ensure_documentation_checked(db, audit.document)
+    db.commit()
     rows = (
         db.query(VendorAuditFinding, VendorStandard)
         .join(VendorStandard, VendorAuditFinding.standard_id == VendorStandard.id)
@@ -287,6 +291,7 @@ def get_vendor_audit(
     summary = _summaries(db, [audit])[0]
     return VendorAuditDetailOut(
         **summary.model_dump(),
+        documentation_issues=[VendorDocumentationIssueOut.model_validate(i) for i in audit.document.documentation_issues],
         findings=[
             VendorAuditFindingRowOut(
                 id=finding.id,

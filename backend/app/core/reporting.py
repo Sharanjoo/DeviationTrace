@@ -171,7 +171,41 @@ def generate_audit_run_pdf(org: Organization, run: AuditSimulationRun) -> bytes:
         pdf.ln(2)
 
     _content_section(pdf, line, run)
+    _documentation_section(pdf, line, run)
     return bytes(pdf.output())
+
+
+DOC_ISSUE_LABELS = {
+    "missing_signature": "Missing signature",
+    "missing_stamp": "Missing stamp",
+    "missing_date": "Missing date",
+    "missing_entry": "Blank entry",
+    "placeholder": "Unfilled placeholder",
+    "scanned": "Scanned - check manually",
+}
+
+
+def _documentation_section(pdf: FPDF, line, run: AuditSimulationRun) -> None:
+    """Blank signatures, stamps, dates and entries in the run's documents."""
+    pdf.ln(4)
+    line("Documentation completeness", size=15, style="B", height=9)
+    if not run.documentation_issues:
+        line("No blank signatures, stamps, dates, entries or unfilled placeholders were found.", size=10)
+        return
+    documents = len({i.document_title for i in run.documentation_issues})
+    line(f"{len(run.documentation_issues)} issue(s) in {documents} document(s).", size=10)
+    current = None
+    for issue in run.documentation_issues:
+        if issue.document_title != current:
+            current = issue.document_title
+            pdf.ln(2)
+            line(f"{current} ({_DEPARTMENT_NAMES.get(issue.department, issue.department)})", size=11, style="B", height=7)
+        label = DOC_ISSUE_LABELS.get(issue.kind, issue.kind)
+        if issue.confidence == "check":
+            label += " (possibly - page has images)"
+        where = f" [{issue.location}]" if issue.location else ""
+        line(f"- {label}: {issue.field}{where}", size=10, height=5)
+        line(f"  {issue.context}", size=9, height=5)
 
 
 _DECISION_LABELS = {"confirmed": "Confirmed gap", "false_positive": "False positive", "needs_sme": "Needs SME"}

@@ -23,6 +23,18 @@ class Document(Base):
     processing_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     detected_process_area: Mapped[str | None] = mapped_column(String(64), nullable=True)
     uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    # When the documentation-completeness check last ran (NULL: not yet;
+    # documents from before the check existed are checked on first use).
+    documentation_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     organization: Mapped["Organization"] = relationship(back_populates="documents")
     sections: Mapped[list["DocumentSection"]] = relationship(back_populates="document", cascade="all, delete-orphan")
+    documentation_issues: Mapped[list["DocumentationIssue"]] = relationship(
+        back_populates="document", cascade="all, delete-orphan", order_by="DocumentationIssue.position"
+    )
+
+    @property
+    def documentation_issue_count(self) -> int | None:
+        if self.documentation_checked_at is None:
+            return None
+        return len(self.documentation_issues)

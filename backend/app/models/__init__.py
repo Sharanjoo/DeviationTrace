@@ -2,11 +2,13 @@ from app.models.audit_checklist_finding import AuditChecklistFinding
 from app.models.audit_checklist_item import AuditChecklistItem
 from app.models.audit_simulation_run import (
     AuditSimulationContentFinding,
+    AuditSimulationDocumentationIssue,
     AuditSimulationRun,
     AuditSimulationRunItem,
 )
 from app.models.document import Document
 from app.models.document_section import DocumentSection
+from app.models.documentation_issue import DocumentationIssue
 from app.models.finding import Finding
 from app.models.org_checklist_exclusion import OrgChecklistExclusion
 from app.models.organization import Organization
@@ -21,10 +23,12 @@ __all__ = [
     "AuditChecklistFinding",
     "AuditChecklistItem",
     "AuditSimulationContentFinding",
+    "AuditSimulationDocumentationIssue",
     "AuditSimulationRun",
     "AuditSimulationRunItem",
     "Document",
     "DocumentSection",
+    "DocumentationIssue",
     "Finding",
     "OrgChecklistExclusion",
     "Organization",

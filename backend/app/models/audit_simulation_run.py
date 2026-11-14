@@ -57,6 +57,9 @@ class AuditSimulationRun(Base):
     content_findings: Mapped[list["AuditSimulationContentFinding"]] = relationship(
         back_populates="run", cascade="all, delete-orphan", order_by="AuditSimulationContentFinding.position"
     )
+    documentation_issues: Mapped[list["AuditSimulationDocumentationIssue"]] = relationship(
+        back_populates="run", cascade="all, delete-orphan", order_by="AuditSimulationDocumentationIssue.position"
+    )
 
     @property
     def run_code(self) -> str:
@@ -74,6 +77,10 @@ class AuditSimulationRun(Base):
     @property
     def content_major(self) -> int:
         return sum(1 for f in self.content_findings if f.severity == "major" and f.decision != "false_positive")
+
+    @property
+    def documentation_issue_count(self) -> int:
+        return len(self.documentation_issues)
 
     @property
     def content_unreviewed(self) -> int:
@@ -137,3 +144,23 @@ class AuditSimulationContentFinding(Base):
     def citation(self) -> str:
         names = {"qmsr": "QMSR", "iso13485": "ISO 13485", "cfr211": "21 CFR"}
         return f"{names.get(self.regulation, self.regulation.upper())} {self.clause_number}"
+
+
+class AuditSimulationDocumentationIssue(Base):
+    """Frozen copy of a documentation issue (blank signature, stamp, date,
+    entry or placeholder) in one of the run's in-scope documents."""
+
+    __tablename__ = "audit_simulation_documentation_issues"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("audit_simulation_runs.id"), nullable=False, index=True)
+    position: Mapped[int] = mapped_column(Integer, nullable=False)
+    department: Mapped[str] = mapped_column(String(32), nullable=False)
+    document_title: Mapped[str] = mapped_column(String(512), nullable=False)
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    field: Mapped[str] = mapped_column(String(255), nullable=False)
+    context: Mapped[str] = mapped_column(Text, nullable=False)
+    location: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    confidence: Mapped[str] = mapped_column(String(16), nullable=False, default="high")
+
+    run: Mapped[AuditSimulationRun] = relationship(back_populates="documentation_issues")

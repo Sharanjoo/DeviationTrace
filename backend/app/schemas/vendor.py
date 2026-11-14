@@ -109,8 +109,21 @@ class VendorAuditFindingRowOut(BaseModel):
     explanation: str
 
 
+class VendorDocumentationIssueOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    kind: str
+    field: str
+    context: str
+    location: str | None
+    confidence: str
+
+
 class VendorAuditDetailOut(VendorAuditSummaryOut):
     findings: list[VendorAuditFindingRowOut]
+    # Blank signatures, dates, entries or placeholders in the vendor's report.
+    documentation_issues: list[VendorDocumentationIssueOut]
 
 
 class VendorOut(BaseModel):

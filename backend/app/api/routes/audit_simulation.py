@@ -12,6 +12,7 @@ from app.core.audit_simulation.content_check import (
     requirement_title,
 )
 from app.core.audit_simulation.rule_based import RuleBasedAuditSimulationEngine
+from app.core.documentation.service import ensure_documentation_checked
 from app.core.reporting import generate_audit_run_pdf
 from app.core.security import CurrentOrg, get_current_org
 from app.database import get_db
@@ -19,6 +20,7 @@ from app.models.audit_checklist_finding import AuditChecklistFinding
 from app.models.audit_checklist_item import AuditChecklistItem
 from app.models.audit_simulation_run import (
     AuditSimulationContentFinding,
+    AuditSimulationDocumentationIssue,
     AuditSimulationRun,
     AuditSimulationRunItem,
 )
@@ -152,7 +154,9 @@ def _execute(db: Session, org_id: uuid.UUID, run: AuditSimulationRun) -> dict[st
             )
         )
 
-    _record_content_gaps(db, run, [d for d in documents if not run.departments or d.department in run.departments])
+    in_scope_documents = [d for d in documents if not run.departments or d.department in run.departments]
+    _record_content_gaps(db, run, in_scope_documents)
+    _record_documentation_issues(db, run, in_scope_documents)
 
     run.missing, run.incomplete, run.satisfied = counts["missing"], counts["incomplete"], counts["satisfied"]
     run.status = "completed"
@@ -200,6 +204,29 @@ def _record_content_gaps(db: Session, run: AuditSimulationRun, documents: list[D
             )
         )
     run.content_documents_checked = len(checked)
+
+
+def _record_documentation_issues(db: Session, run: AuditSimulationRun, documents: list[Document]) -> None:
+    """Missing signatures, stamps, dates and entries in the run's documents,
+    frozen into the run (see app/core/documentation)."""
+    ordered = sorted(documents, key=lambda d: (_DEPARTMENT_ORDER.get(d.department, 99), d.title))
+    position = 0
+    for document in ordered:
+        ensure_documentation_checked(db, document)
+        for issue in document.documentation_issues:
+            run.documentation_issues.append(
+                AuditSimulationDocumentationIssue(
+                    position=position,
+                    department=document.department,
+                    document_title=document.title,
+                    kind=issue.kind,
+                    field=issue.field,
+                    context=issue.context,
+                    location=issue.location,
+                    confidence=issue.confidence,
+                )
+            )
+            position += 1
 
 
 @router.post("/run", response_model=AuditSimulationRunResult)

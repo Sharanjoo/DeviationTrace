@@ -32,6 +32,7 @@ interface DocumentOut {
   status: string;
   processing_error: string | null;
   uploaded_at: string;
+  documentation_issue_count: number | null;
 }
 
 interface UploadState {
@@ -361,6 +362,12 @@ function DepartmentUploadCard({
                       </span>
                     )}
                   </span>
+                  {!!doc.documentation_issue_count && (
+                    <span className="block text-xs" style={{ color: "var(--severity-major)" }}>
+                      {doc.documentation_issue_count} blank signature/date/field
+                      {doc.documentation_issue_count === 1 ? "" : "s"} found
+                    </span>
+                  )}
                   {doc.status !== "processed" && (
                     <span className="text-xs" style={{ color: "var(--severity-critical)" }}>
                       {doc.processing_error ?? `Not processed (${doc.status})`}

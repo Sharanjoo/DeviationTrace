@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.matching.base import FindingData
 from app.core.matching.rule_based import RuleBasedMatchingEngine
+from app.core.documentation.service import refresh_documentation_issues
 from app.core.parsing.pipeline import run_pipeline
 from app.core.security import CurrentOrg, get_current_org
 from app.core.storage import save_upload
@@ -209,6 +210,7 @@ def process_document(
 
         document.status = "processed"
         document.detected_process_area = result.detected_process_area
+        refresh_documentation_issues(db, document)
         db.commit()
     except Exception as exc:
         db.rollback()

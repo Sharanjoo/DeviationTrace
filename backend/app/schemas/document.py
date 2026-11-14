@@ -37,6 +37,8 @@ class DocumentOut(BaseModel):
     detected_process_area: str | None = None
     processing_error: str | None = None
     uploaded_at: datetime
+    # Blank signatures/dates/entries found; None until the document is checked.
+    documentation_issue_count: int | None = None
 
 
 class DocumentDetailOut(DocumentOut):

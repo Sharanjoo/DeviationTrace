@@ -5,6 +5,7 @@ import { AuditDetailsCard } from "../components/AuditDetailsCard";
 import { AuditDocumentsStep } from "../components/AuditDocumentsStep";
 import { AuditStepper } from "../components/AuditStepper";
 import { ContentFindings } from "../components/ContentFindings";
+import { DocumentationIssues } from "../components/DocumentationIssues";
 import { CheckHeader, FilterChips, GroupCard, ResultRow, StatCards, type StatusDef } from "../components/CheckResults";
 import { countBy } from "../countBy";
 import {
@@ -176,6 +177,10 @@ export function SimulationRunDetail() {
 
           <div className="mt-4 border-t pt-8" style={{ borderColor: "var(--glass-border)" }}>
             <ContentFindings run={run} onChange={updateContentFinding} />
+          </div>
+
+          <div className="mt-4 border-t pt-8" style={{ borderColor: "var(--glass-border)" }}>
+            <DocumentationIssues issues={run.documentation_issues} />
           </div>
         </>
       )}

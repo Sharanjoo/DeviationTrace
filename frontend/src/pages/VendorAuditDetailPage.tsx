@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, ApiError } from "../api/client";
 import { GroupCard, ResultRow, StatCards, type StatusDef } from "../components/CheckResults";
+import { DocumentationIssues } from "../components/DocumentationIssues";
 import { countBy } from "../countBy";
 import { VENDOR_CATEGORY_LABELS } from "../departmentVendorMap";
 import { displayFileName, vendorAuditDate, type VendorAuditDetail } from "../vendors";
@@ -167,6 +168,14 @@ export function VendorAuditDetailPage() {
           </GroupCard>
         </>
       )}
+
+      <div className="mt-4 border-t pt-8" style={{ borderColor: "var(--glass-border)" }}>
+        <DocumentationIssues
+          issues={audit.documentation_issues}
+          documentTitle={audit.document_title}
+          emptyText="The vendor's report has no blank signatures, dates or entries, and no unfilled placeholders."
+        />
+      </div>
     </div>
   );
 }
